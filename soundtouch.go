@@ -4,12 +4,17 @@ import (
   "bytes"
   "fmt"
   "io/ioutil"
+  "log"
   "net"
   "net/http"
   "net/url"
 
+  "github.com/gorilla/websocket"
   "github.com/hashicorp/mdns"
 )
+
+const WEBSOCKET_PORT int = 8080
+const MESSAGE_BUFFER_SIZE int = 256
 
 type Speaker struct {
   IP           net.IP
@@ -39,9 +44,33 @@ func NewSpeaker(entry *mdns.ServiceEntry) *Speaker {
     },
     url.URL{
       Scheme: "ws",
-      Host:   fmt.Sprintf("%v:%v", entry.AddrV4.String(), entry.Port),
+      Host:   fmt.Sprintf("%v:%v", entry.AddrV4.String(), WEBSOCKET_PORT),
     },
   }
+}
+
+func (s *Speaker) Listen() (chan string, error) {
+  conn, _, err := websocket.DefaultDialer.Dial(
+    s.WebSocketUrl.String(),
+    http.Header{
+      "Sec-WebSocket-Protocol": []string{"gabbo"},
+    })
+  if err != nil {
+    return nil, err
+  }
+
+  messageCh := make(chan string, MESSAGE_BUFFER_SIZE)
+  go func() {
+    for {
+      _, body, err := conn.ReadMessage()
+      if err != nil {
+        log.Fatal(err)
+      }
+      messageCh <- string(body)
+    }
+  }()
+  return messageCh, nil
+
 }
 
 func (s *Speaker) GetData(action string) ([]byte, error) {
