@@ -23,15 +23,18 @@ type Speaker struct {
   WebSocketUrl url.URL
 }
 
-func Lookup(speakerCh chan<- *Speaker) {
+func Lookup() <-chan *Speaker {
+  speakerCh := make(chan *Speaker)
   entriesCh := make(chan *mdns.ServiceEntry, 1)
+  defer close(entriesCh)
   go func() {
-    defer close(entriesCh)
+    defer close(speakerCh)
     for entry := range entriesCh {
       speakerCh <- NewSpeaker(entry)
     }
   }()
   mdns.Lookup("_soundtouch._tcp", entriesCh)
+  return speakerCh
 }
 
 func NewSpeaker(entry *mdns.ServiceEntry) *Speaker {
