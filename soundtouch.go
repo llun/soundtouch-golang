@@ -23,7 +23,7 @@ type Speaker struct {
   WebSocketUrl url.URL
 }
 
-func Lookup() <-chan *Speaker {
+func Lookup(iface *net.Interface) <-chan *Speaker {
   speakerCh := make(chan *Speaker)
   entriesCh := make(chan *mdns.ServiceEntry, 1)
   defer close(entriesCh)
@@ -33,7 +33,13 @@ func Lookup() <-chan *Speaker {
       speakerCh <- NewSpeaker(entry)
     }
   }()
-  mdns.Lookup("_soundtouch._tcp", entriesCh)
+
+  params := mdns.DefaultParams("_soundtouch._tcp")
+  params.Entries = entriesCh
+  if iface != nil {
+    params.Interface = iface
+  }
+  mdns.Query(params)
   return speakerCh
 }
 
