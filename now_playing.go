@@ -22,14 +22,6 @@ const (
   IHEART                = "IHEART"
 )
 
-type ContentItem struct {
-  Type         string `xml:"type,attr"`
-  Source       Source `xml:"source,attr"`
-  Location     string `xml:"location,attr"`
-  Name         string `xml:"itemName"`
-  IsPresetable bool   `xml:"isPresetable,attr"`
-}
-
 type NowPlaying struct {
   Source        string      `xml:"source,attr"`
   SourceAccount string      `xml:"sourceAccount,attr"`
