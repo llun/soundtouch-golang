@@ -58,7 +58,7 @@ func NewSpeaker(entry *mdns.ServiceEntry) *Speaker {
   }
 }
 
-func (s *Speaker) Listen() (chan string, error) {
+func (s *Speaker) Listen() (chan *Update, error) {
   conn, _, err := websocket.DefaultDialer.Dial(
     s.WebSocketUrl.String(),
     http.Header{
@@ -68,14 +68,18 @@ func (s *Speaker) Listen() (chan string, error) {
     return nil, err
   }
 
-  messageCh := make(chan string, MESSAGE_BUFFER_SIZE)
+  messageCh := make(chan *Update, MESSAGE_BUFFER_SIZE)
   go func() {
     for {
       _, body, err := conn.ReadMessage()
       if err != nil {
         log.Fatal(err)
       }
-      messageCh <- string(body)
+
+      update, err := NewUpdate(body)
+      if update != nil {
+        messageCh <- update
+      }
     }
   }()
   return messageCh, nil
