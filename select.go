@@ -12,11 +12,6 @@ type ContentItem struct {
   IsPresetable bool   `xml:"isPresetable,attr"`
 }
 
-type Preset struct {
-  ID      int         `xml:"id,attr"`
-  Content ContentItem `xml:"ContentItem"`
-}
-
 func (s *Speaker) Select(item ContentItem) error {
   data, err := xml.Marshal(item)
   if err != nil {
