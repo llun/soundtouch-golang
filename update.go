@@ -21,7 +21,11 @@ func NewUpdate(body []byte) (*Update, error) {
 		return nil, errors.New("Invalid XML format")
 	}
 
-	rootElement := root.(xml.StartElement)
+	rootElement, ok := root.(xml.StartElement)
+	if !ok {
+		return nil, errors.New("Invalid XML format")
+	}
+
 	if rootElement.Name.Local != "updates" {
 		return nil, errors.New("Unsupported event")
 	}
