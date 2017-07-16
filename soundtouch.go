@@ -21,6 +21,8 @@ type Speaker struct {
 	Port         int
 	BaseHttpUrl  url.URL
 	WebSocketUrl url.URL
+
+	socketConn *websocket.Conn
 }
 
 func Lookup(iface *net.Interface) <-chan *Speaker {
@@ -59,7 +61,7 @@ func NewSpeaker(entry *mdns.ServiceEntry) *Speaker {
 }
 
 func (s *Speaker) Listen() (chan *Update, error) {
-	conn, _, err := websocket.DefaultDialer.Dial(
+	s.socketConn, _, err := websocket.DefaultDialer.Dial(
 		s.WebSocketUrl.String(),
 		http.Header{
 			"Sec-WebSocket-Protocol": []string{"gabbo"},
@@ -71,7 +73,7 @@ func (s *Speaker) Listen() (chan *Update, error) {
 	messageCh := make(chan *Update, MESSAGE_BUFFER_SIZE)
 	go func() {
 		for {
-			_, body, err := conn.ReadMessage()
+			_, body, err := s.socketConn.ReadMessage()
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -84,6 +86,10 @@ func (s *Speaker) Listen() (chan *Update, error) {
 	}()
 	return messageCh, nil
 
+}
+
+func (s *Speaker) Close() error {
+	return s.socketConn.Close()
 }
 
 func (s *Speaker) GetData(action string) ([]byte, error) {
