@@ -81,7 +81,7 @@ func (s *Speaker) Listen() (chan *Update, error) {
 			if err != nil {
 				log.Fatal(err)
 			}
-			log.Printf("Raw Message: %v", body)
+			log.Printf("Raw Message: %v", string(body))
 
 			update, err := NewUpdate(body)
 			log.Printf("Message: %v", update)
