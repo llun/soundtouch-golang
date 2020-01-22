@@ -42,6 +42,16 @@ func NewUpdate(body []byte) (*Update, error) {
 
 	updateTypeElement := updateType.(xml.StartElement)
 	switch updateTypeElement.Name.Local {
+	case "connectionStateUpdated":
+		valueElement := updateTypeElement
+
+		var connState ConnectionStateUpdated
+		err = decoder.DecodeElement(&connState, &valueElement)
+		if err != nil {
+			return nil, err
+		}
+
+		return &Update{connState}, nil
 	case "volumeUpdated":
 		valueElement := value.(xml.StartElement)
 
