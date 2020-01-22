@@ -23,6 +23,7 @@ const (
 )
 
 type NowPlaying struct {
+	PlayStatus    Source      `xml:"playStatus"`
 	Source        string      `xml:"source,attr"`
 	SourceAccount string      `xml:"sourceAccount,attr"`
 	DeviceId      string      `xml:"deviceID,attr"`
