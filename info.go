@@ -2,6 +2,8 @@ package soundtouch
 
 import (
 	"encoding/xml"
+	"fmt"
+	log "github.com/sirupsen/logrus"
 )
 
 type Info struct {
@@ -25,4 +27,11 @@ func (s *Speaker) Info() (Info, error) {
 		return info, err
 	}
 	return info, nil
+}
+
+func (s Info) String() string {
+	if log.GetLevel() >= log.TraceLevel {
+		return fmt.Sprintf("%v (%v): %v\n%v", s.Name, s.DeviceID, s.Type, string(s.Raw))
+	}
+	return fmt.Sprintf("%v (%v): %v", s.Name, s.DeviceID, s.Type)
 }
