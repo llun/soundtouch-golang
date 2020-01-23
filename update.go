@@ -7,7 +7,8 @@ import (
 )
 
 type Update struct {
-	Value interface{}
+	DeviceId string
+	Value    interface{}
 }
 
 func NewUpdate(body []byte) (*Update, error) {
@@ -28,6 +29,12 @@ func NewUpdate(body []byte) (*Update, error) {
 
 	if rootElement.Name.Local != "updates" {
 		return nil, errors.New("Unsupported event")
+	}
+	var deviceID string
+	for i := 0; i < len(rootElement.Attr); i++ {
+		if rootElement.Attr[i].Name.Local == "deviceID" {
+			deviceID = rootElement.Attr[i].Value
+		}
 	}
 
 	updateType, err := decoder.Token()
@@ -51,7 +58,7 @@ func NewUpdate(body []byte) (*Update, error) {
 			return nil, err
 		}
 
-		return &Update{connState}, nil
+		return &Update{deviceID, connState}, nil
 	case "volumeUpdated":
 		valueElement := value.(xml.StartElement)
 
@@ -61,7 +68,7 @@ func NewUpdate(body []byte) (*Update, error) {
 			return nil, err
 		}
 
-		return &Update{volume}, nil
+		return &Update{deviceID, volume}, nil
 	case "nowPlayingUpdated":
 		valueElement := value.(xml.StartElement)
 
@@ -71,7 +78,7 @@ func NewUpdate(body []byte) (*Update, error) {
 			return nil, err
 		}
 
-		return &Update{nowPlaying}, nil
+		return &Update{deviceID, nowPlaying}, nil
 	case "nowSelectionUpdated":
 		valueElement := value.(xml.StartElement)
 
@@ -80,7 +87,7 @@ func NewUpdate(body []byte) (*Update, error) {
 		if err != nil {
 			return nil, err
 		}
-		return &Update{preset}, nil
+		return &Update{deviceID, preset}, nil
 	default:
 		return nil, nil
 	}
