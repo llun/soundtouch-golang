@@ -63,7 +63,7 @@ func main() {
 
 	}
 	for m := range messageCh {
-		log.Infof("From %v XXX %v\n", soundtouchNetwork[m.DeviceId], m)
+		log.Infof("%v -> %v\n", soundtouchNetwork[m.DeviceId], m)
 	}
 	wg.Wait()
 }
