@@ -1,8 +1,7 @@
 package main
 
 import (
-	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net"
 
 	"github.com/theovassiliou/soundtouch-golang"
@@ -11,7 +10,7 @@ import (
 func main() {
 
 	i, err := net.InterfaceByName("en0")
-	fmt.Printf("Name : %v, supports: %v, HW Address: %v\n", i.Name, i.Flags.String(), i.HardwareAddr)
+	log.Infof("Name : %v, supports: %v, HW Address: %v\n", i.Name, i.Flags.String(), i.HardwareAddr)
 
 	// see http://golang.org/pkg/net/#Flags
 	// addr, err := i.Addrs()
