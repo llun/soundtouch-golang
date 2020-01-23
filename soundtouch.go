@@ -3,8 +3,8 @@ package soundtouch
 import (
 	"bytes"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"net"
 	"net/http"
 	"net/url"
@@ -13,21 +13,21 @@ import (
 	"github.com/hashicorp/mdns"
 )
 
-const WEBSOCKET_PORT int = 8080
-const MESSAGE_BUFFER_SIZE int = 256
+const WebsocketPort int = 8080
+const MessageBufferSize int = 256
 
 type Speaker struct {
 	IP           net.IP
 	Port         int
-	BaseHttpUrl  url.URL
-	WebSocketUrl url.URL
-
-	conn *websocket.Conn
+	BaseHTTPURL  url.URL
+	WebSocketURL url.URL
+	DeviceInfo   Info
+	conn         *websocket.Conn
 }
 
 func Lookup(iface *net.Interface) <-chan *Speaker {
 	speakerCh := make(chan *Speaker)
-	entriesCh := make(chan *mdns.ServiceEntry, 1)
+	entriesCh := make(chan *mdns.ServiceEntry, 7)
 	defer close(entriesCh)
 	go func() {
 		defer close(speakerCh)
@@ -55,16 +55,17 @@ func NewSpeaker(entry *mdns.ServiceEntry) *Speaker {
 		},
 		url.URL{
 			Scheme: "ws",
-			Host:   fmt.Sprintf("%v:%v", entry.AddrV4.String(), WEBSOCKET_PORT),
+			Host:   fmt.Sprintf("%v:%v", entry.AddrV4.String(), WebsocketPort),
 		},
+		Info{},
 		nil,
 	}
 }
 
 func (s *Speaker) Listen() (chan *Update, error) {
-	log.Printf("Dialing %v", s.WebSocketUrl.String())
+	log.Debugf("Dialing %v", s.WebSocketURL.String())
 	conn, _, err := websocket.DefaultDialer.Dial(
-		s.WebSocketUrl.String(),
+		s.WebSocketURL.String(),
 		http.Header{
 			"Sec-WebSocket-Protocol": []string{"gabbo"},
 		})
@@ -73,18 +74,18 @@ func (s *Speaker) Listen() (chan *Update, error) {
 	}
 
 	s.conn = conn
-	messageCh := make(chan *Update, MESSAGE_BUFFER_SIZE)
-	log.Printf("Created channel")
+	messageCh := make(chan *Update, MessageBufferSize)
+	log.Debugf("Created channel")
 	go func() {
 		for {
 			_, body, err := conn.ReadMessage()
 			if err != nil {
 				log.Fatal(err)
 			}
-			log.Printf("Raw Message: %v", string(body))
+			log.Tracef("Raw Message: %v", string(body))
 
 			update, err := NewUpdate(body)
-			log.Printf("Message: %v", update)
+			log.Tracef("Message: %v", update)
 			if update != nil {
 				messageCh <- update
 			}
@@ -95,12 +96,12 @@ func (s *Speaker) Listen() (chan *Update, error) {
 }
 
 func (s *Speaker) Close() error {
-	log.Printf("Closing socket")
+	log.Debugf("Closing socket")
 	return s.conn.Close()
 }
 
 func (s *Speaker) GetData(action string) ([]byte, error) {
-	actionUrl := s.BaseHttpUrl
+	actionUrl := s.BaseHTTPURL
 	actionUrl.Path = action
 	resp, err := http.Get(actionUrl.String())
 	if err != nil {
@@ -115,7 +116,7 @@ func (s *Speaker) GetData(action string) ([]byte, error) {
 }
 
 func (s *Speaker) SetData(action string, input []byte) ([]byte, error) {
-	actionUrl := s.BaseHttpUrl
+	actionUrl := s.BaseHTTPURL
 	actionUrl.Path = action
 	buffer := bytes.NewBuffer(input)
 	resp, err := http.Post(actionUrl.String(), "application/xml", buffer)

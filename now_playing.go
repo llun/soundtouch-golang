@@ -7,22 +7,23 @@ import (
 type Source string
 
 const (
-	SLAVE          Source = "SLAVE_SOURCE"
-	INTERNET_RADIO        = "INTERNET_RADIO"
-	PANDORA               = "PANDORA"
-	AIRPLAY               = "AIRPLAY"
-	STORED_MUSIC          = "STORED_MUSIC"
-	AUX                   = "AUX"
-	OFF_SOURCE            = "OFF_SOURCE"
-	CURRATED_RADIO        = "CURRATED_RADIO"
-	STANDBY               = "STANDBY"
-	UPDATE                = "UPDATE"
-	DEEZER                = "DEEZER"
-	SPOTIFY               = "SPOTIFY"
-	IHEART                = "IHEART"
+	SLAVE          = "SLAVE_SOURCE"
+	INTERNET_RADIO = "INTERNET_RADIO"
+	PANDORA        = "PANDORA"
+	AIRPLAY        = "AIRPLAY"
+	STORED_MUSIC   = "STORED_MUSIC"
+	AUX            = "AUX"
+	OFF_SOURCE     = "OFF_SOURCE"
+	CURRATED_RADIO = "CURRATED_RADIO"
+	STANDBY        = "STANDBY"
+	UPDATE         = "UPDATE"
+	DEEZER         = "DEEZER"
+	SPOTIFY        = "SPOTIFY"
+	IHEART         = "IHEART"
 )
 
 type NowPlaying struct {
+	PlayStatus    Source      `xml:"playStatus"`
 	Source        string      `xml:"source,attr"`
 	SourceAccount string      `xml:"sourceAccount,attr"`
 	DeviceId      string      `xml:"deviceID,attr"`
