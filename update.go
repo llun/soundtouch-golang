@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/xml"
 	"errors"
+	"fmt"
 )
 
 type Update struct {
@@ -91,4 +92,8 @@ func NewUpdate(body []byte) (*Update, error) {
 	default:
 		return nil, nil
 	}
+}
+
+func (u Update) String() string {
+	return fmt.Sprintf("DeviceId(%v) updated %v", u.DeviceId, u.Value)
 }
