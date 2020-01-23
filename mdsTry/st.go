@@ -1,44 +1,61 @@
 package main
 
 import (
-	"fmt"
-	"log"
 	"net"
-	"net/http"
-	"net/url"
 	"sync"
 
-	"github.com/gorilla/websocket"
-	"github.com/hashicorp/mdns"
+	"github.com/jpillora/opts"
+	log "github.com/sirupsen/logrus"
+
 	"github.com/theovassiliou/soundtouch-golang"
 )
 
 const WEBSOCKET_PORT int = 8080
 const MESSAGE_BUFFER_SIZE int = 256
 
-type Speaker struct {
-	IP           net.IP
-	Port         int
-	BaseHttpUrl  url.URL
-	WebSocketUrl url.URL
+var soundtouchNetwork = make(map[string]string)
+var conf = config{}
 
-	conn *websocket.Conn
+//set this via ldflags (see https://stackoverflow.com/q/11354518)
+var version = ".1"
+
+// VERSION is the current version number.
+var VERSION = "0.0" + version + "-src"
+
+type config struct {
+	Speakers []string  `help:"Speakers to listen for, all if not set"`
+	LogLevel log.Level `help:"Log level, one of panic, fatal, error, warn or warning, info, debug, trace"`
 }
 
 func main() {
+	conf = config{
+		LogLevel: log.DebugLevel,
+	}
+
+	//parse config
+	opts.New(&conf).
+		Repo("github.com/theovassiliou/dta").
+		Version(VERSION).
+		Parse()
+
+	log.SetLevel(conf.LogLevel)
 
 	i, _ := net.InterfaceByName("en0")
-	fmt.Printf("Name : %v, supports: %v, HW Address: %v\n", i.Name, i.Flags.String(), i.HardwareAddr)
-	speakerCh := lookup(i)
+	log.Infof("Name : %v, supports: %v, HW Address: %v\n", i.Name, i.Flags.String(), i.HardwareAddr)
+	speakerCh := soundtouch.Lookup(i)
 	var wg sync.WaitGroup
 	messageCh := make(chan *soundtouch.Update)
 
 	for speaker := range speakerCh {
-		log.Printf("Speaker: %v\n", speaker)
+		di, _ := speaker.Info()
+		speaker.DeviceInfo = di
+		soundtouchNetwork[di.DeviceID] = di.Name
+		log.Infof("Speaker: %v\n", speaker)
 		wg.Add(1)
-		go func(speaker *Speaker, msgChan chan *soundtouch.Update) {
+		go func(s *soundtouch.Speaker, msgChan chan *soundtouch.Update) {
 			defer wg.Done()
-			webSocketCh, _ := speaker.Listen()
+
+			webSocketCh, _ := s.Listen()
 			for message := range webSocketCh {
 				msgChan <- message
 			}
@@ -46,97 +63,7 @@ func main() {
 
 	}
 	for m := range messageCh {
-		log.Printf("XXX %#v\n", m)
+		log.Infof("From %v XXX %v\n", soundtouchNetwork[m.DeviceId], m)
 	}
 	wg.Wait()
-}
-
-// merges multiple channels
-// from https://medium.com/justforfunc/two-ways-of-merging-n-channels-in-go-43c0b57cd1de
-func merge(cs ...<-chan *soundtouch.Update) <-chan *soundtouch.Update {
-	out := make(chan *soundtouch.Update)
-	var wg sync.WaitGroup
-	wg.Add(len(cs))
-	for _, c := range cs {
-		go func(c <-chan *soundtouch.Update) {
-			for v := range c {
-				out <- v
-			}
-			wg.Done()
-		}(c)
-	}
-	go func() {
-		wg.Wait()
-		close(out)
-	}()
-	return out
-}
-
-func (s *Speaker) Listen() (chan *soundtouch.Update, error) {
-	log.Printf("Dialing %v", s.WebSocketUrl.String())
-	conn, _, err := websocket.DefaultDialer.Dial(
-		s.WebSocketUrl.String(),
-		http.Header{
-			"Sec-WebSocket-Protocol": []string{"gabbo"},
-		})
-	if err != nil {
-		return nil, err
-	}
-
-	s.conn = conn
-	messageCh := make(chan *soundtouch.Update, MESSAGE_BUFFER_SIZE)
-	log.Printf("Created channel")
-	go func() {
-		for {
-			_, body, err := conn.ReadMessage()
-			if err != nil {
-				log.Fatal(err)
-			}
-			log.Printf("Raw Message: %v", string(body))
-
-			update, err := soundtouch.NewUpdate(body)
-			log.Printf("Message: %v", update)
-			if update != nil {
-				messageCh <- update
-			}
-		}
-	}()
-	return messageCh, nil
-
-}
-
-func lookup(iface *net.Interface) <-chan *Speaker {
-	speakerCh := make(chan *Speaker)
-	entriesCh := make(chan *mdns.ServiceEntry, 6)
-	defer close(entriesCh)
-	go func() {
-		defer close(speakerCh)
-		for entry := range entriesCh {
-			speakerCh <- newSpeaker(entry)
-		}
-	}()
-
-	params := mdns.DefaultParams("_soundtouch._tcp")
-	params.Entries = entriesCh
-	if iface != nil {
-		params.Interface = iface
-	}
-	mdns.Query(params)
-	return speakerCh
-}
-
-func newSpeaker(entry *mdns.ServiceEntry) *Speaker {
-	return &Speaker{
-		entry.AddrV4,
-		entry.Port,
-		url.URL{
-			Scheme: "http",
-			Host:   fmt.Sprintf("%v:%v", entry.AddrV4.String(), entry.Port),
-		},
-		url.URL{
-			Scheme: "ws",
-			Host:   fmt.Sprintf("%v:%v", entry.AddrV4.String(), WEBSOCKET_PORT),
-		},
-		nil,
-	}
 }
