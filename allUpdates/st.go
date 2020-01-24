@@ -23,6 +23,7 @@ var version = ".1"
 var VERSION = "0.0" + version + "-src"
 
 type config struct {
+	// FIXME Speakers option not yes supported
 	Speakers []string  `help:"Speakers to listen for, all if not set"`
 	LogLevel log.Level `help:"Log level, one of panic, fatal, error, warn or warning, info, debug, trace"`
 }
@@ -34,7 +35,7 @@ func main() {
 
 	//parse config
 	opts.New(&conf).
-		Repo("github.com/theovassiliou/dta").
+		Repo("github.com/theovassiliou/soundtouch-golang").
 		Version(VERSION).
 		Parse()
 
