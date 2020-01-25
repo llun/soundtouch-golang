@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"net"
+	"net/url"
 	"reflect"
 	"sync"
 
@@ -24,18 +26,28 @@ var VERSION = "0.0" + version + "-src"
 const shortUsage = "Captures broadcastet information from your Bose Soundtouch systems."
 
 var influxDB = soundtouch.InfluxDB{
+	BaseHTTPURL: url.URL{
+		Scheme: "http",
+		Host:   "localhost:8086",
+	},
+	Database:          "soundtouch",
 	SoundtouchNetwork: make(map[string]string),
 }
 
 type config struct {
 	Speakers  []string  `opts:"group=Soundtouch" help:"Speakers to listen for, all if not set"`
 	Interface string    `opts:"group=Soundtouch" help:"network interface to listen"`
+	InfluxURL string    `opts:"group=InfluxDB" help:"URL of the influx database"`
+	Database  string    `opts:"group=InfluxDB" help:"InfluxDB database to send the data to"`
+	DryRun    bool      `help:"Dump the lineprotocoll in curl format instead sending to influxdb"`
 	LogLevel  log.Level `help:"Log level, one of panic, fatal, error, warn or warning, info, debug, trace"`
 }
 
 func main() {
 	conf = config{
 		LogLevel:  log.DebugLevel,
+		InfluxURL: "http://influxdb:8086",
+		Database:  "soundtouch",
 		Interface: "en0",
 	}
 
@@ -47,6 +59,14 @@ func main() {
 		Parse()
 
 	log.SetLevel(conf.LogLevel)
+
+	v, err := url.Parse(conf.InfluxURL)
+	if err != nil {
+		log.Fatalf("Not a valid URL: %v", conf.InfluxURL)
+	}
+
+	influxDB.BaseHTTPURL = *v
+	influxDB.Database = conf.Database
 
 	i, err := net.InterfaceByName(conf.Interface)
 
@@ -83,11 +103,20 @@ func main() {
 	}
 	for m := range messageCh {
 		mLogger := log.WithFields(log.Fields{
-			"Speaker": influxDB.SoundtouchNetwork[m.DeviceId],
+			"Speaker": m.DeviceId,
 			"Value":   reflect.TypeOf(m.Value).Name(),
 		})
-		mLogger.Infof("%v\n", m)
+		v, _ := m.Lineproto(influxDB, m)
+		if !conf.DryRun && v != "" {
+			result, err := influxDB.SetData("write", []byte(v))
+			if err != nil {
+				mLogger.Errorf("failed")
+			}
+			mLogger.Debugf("succeeded: %v", string(result))
 
+		} else if v != "" {
+			fmt.Printf("curl -i -XPOST \"%v\" --data-binary '%v'\n", influxDB.WriteURL(), v)
+		}
 	}
 	wg.Wait()
 }

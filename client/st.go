@@ -12,15 +12,6 @@ func main() {
 	i, err := net.InterfaceByName("en0")
 	log.Infof("Name : %v, supports: %v, HW Address: %v\n", i.Name, i.Flags.String(), i.HardwareAddr)
 
-	// see http://golang.org/pkg/net/#Flags
-	// addr, err := i.Addrs()
-	// var ipnet *net.IPNet
-	// if ipnet, ok := addr[1].(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
-	// 	if ipnet.IP.To4() != nil {
-	// 		fmt.Println(ipnet.IP.String())
-	// 	}
-
-	// }
 	speakerCh := soundtouch.Lookup(i)
 
 	// speakerCh := make(chan *soundtouch.Speaker, 1)

@@ -63,7 +63,11 @@ func NewSpeaker(entry *mdns.ServiceEntry) *Speaker {
 }
 
 func (s *Speaker) Listen() (chan *Update, error) {
-	log.Debugf("Dialing %v", s.WebSocketURL.String())
+	spkLogger := log.WithFields(log.Fields{
+		"Speaker": s.DeviceInfo.Name,
+		"ID":      s.DeviceInfo.DeviceID,
+	})
+	spkLogger.Tracef("Dialing %v", s.WebSocketURL.String())
 	conn, _, err := websocket.DefaultDialer.Dial(
 		s.WebSocketURL.String(),
 		http.Header{
@@ -75,17 +79,25 @@ func (s *Speaker) Listen() (chan *Update, error) {
 
 	s.conn = conn
 	messageCh := make(chan *Update, MessageBufferSize)
-	log.Debugf("Created channel")
 	go func() {
 		for {
+			mLogger := log.WithFields(log.Fields{
+				"Speaker": s.DeviceInfo.Name,
+				"ID":      s.DeviceInfo.DeviceID,
+			})
 			_, body, err := conn.ReadMessage()
 			if err != nil {
 				log.Fatal(err)
 			}
-			log.Tracef("Raw Message: %v", string(body))
+			mLogger.Tracef("Raw Message: %v", string(body))
 
 			update, err := NewUpdate(body)
-			log.Tracef("Message: %v", update)
+			if err != nil {
+				mLogger.Debugf("Message: unkown")
+				mLogger.Tracef(err.Error())
+			} else {
+				mLogger.Debugf("Message: %v", update)
+			}
 			if update != nil {
 				messageCh <- update
 			}
