@@ -13,14 +13,7 @@ import (
 	"github.com/theovassiliou/soundtouch-golang"
 )
 
-var soundtouchNetwork = make(map[string]string)
-var strengthMapping = map[string]int{
-	"EXCELLENT_SIGNAL": 100, "GOOD_SIGNAL": 70, "POOR_SIGNAL": 30, "MARGINAL_SIGNAL": 10,
-}
-
-var playStateMapping = map[soundtouch.Source]int{
-	"PLAY_STATE": 1, "PAUSE_STATE": 2, "STOP_STATE": 3, "STANDBY": 5, "BUFFERING_STATE": 8, "INVALID_PLAY_STATUS": 13,
-}
+// var soundtouchNetwork = make(map[string]string)
 
 var conf = config{}
 
@@ -29,34 +22,60 @@ var version = ".1"
 
 // VERSION is the current version number.
 var VERSION = "0.0" + version + "-src"
-var influxDBinstance = soundtouch.InfluxDB{
+
+const shortUsage = "Captures broadcastet information from your Bose Soundtouch systems."
+
+var influxDB = soundtouch.InfluxDB{
 	BaseHTTPURL: url.URL{
 		Scheme: "http",
 		Host:   "localhost:8086",
 	},
-	Database: "soundtouch",
+	Database:          "soundtouch",
+	SoundtouchNetwork: make(map[string]string),
 }
 
 type config struct {
-	Speakers []string  `help:"Speakers to listen for, all if not set"`
-	LogLevel log.Level `help:"Log level, one of panic, fatal, error, warn or warning, info, debug, trace"`
+	Speakers  []string  `opts:"group=Soundtouch" help:"Speakers to listen for, all if not set"`
+	Interface string    `opts:"group=Soundtouch" help:"network interface to listen"`
+	InfluxURL string    `opts:"group=InfluxDB" help:"URL of the influx database"`
+	Database  string    `opts:"group=InfluxDB" help:"InfluxDB database to send the data to"`
+	DryRun    bool      `help:"Dump the lineprotocoll in curl format instead sending to influxdb"`
+	LogLevel  log.Level `help:"Log level, one of panic, fatal, error, warn or warning, info, debug, trace"`
 }
 
 func main() {
 	conf = config{
-		LogLevel: log.DebugLevel,
+		LogLevel:  log.DebugLevel,
+		InfluxURL: "http://influxdb:8086",
+		Database:  "soundtouch",
+		Interface: "en0",
 	}
 
 	//parse config
 	opts.New(&conf).
+		Summary(shortUsage).
 		Repo("github.com/theovassiliou/soundtouch-golang").
 		Version(VERSION).
 		Parse()
 
 	log.SetLevel(conf.LogLevel)
 
-	i, _ := net.InterfaceByName("en0")
-	log.Infof("Name : %v, supports: %v, HW Address: %v\n", i.Name, i.Flags.String(), i.HardwareAddr)
+	v, err := url.Parse(conf.InfluxURL)
+	if err != nil {
+		log.Fatalf("Not a valid URL: %v", conf.InfluxURL)
+	}
+
+	influxDB.BaseHTTPURL = *v
+	influxDB.Database = conf.Database
+
+	i, err := net.InterfaceByName(conf.Interface)
+
+	if err != nil {
+		log.Fatalf("Error with interface. %s", err)
+	}
+
+	log.Debugf("Listening @ %v, supports: %v, HW Address: %v\n", i.Name, i.Flags.String(), i.HardwareAddr)
+
 	speakerCh := soundtouch.Lookup(i)
 	var wg sync.WaitGroup
 	messageCh := make(chan *soundtouch.Update)
@@ -64,8 +83,13 @@ func main() {
 	for speaker := range speakerCh {
 		di, _ := speaker.Info()
 		speaker.DeviceInfo = di
-		soundtouchNetwork[di.DeviceID] = di.Name
-		log.Infof("Speaker: %v\n", speaker)
+		influxDB.SoundtouchNetwork[di.DeviceID] = di.Name
+		spkLogger := log.WithFields(log.Fields{
+			"Speaker": speaker.DeviceInfo.Name,
+			"ID":      speaker.DeviceInfo.DeviceID,
+		})
+		spkLogger.Infof("Listening\n")
+		spkLogger.Debugf(" with IP: %v", speaker.IP)
 		wg.Add(1)
 		go func(s *soundtouch.Speaker, msgChan chan *soundtouch.Update) {
 			defer wg.Done()
@@ -78,57 +102,20 @@ func main() {
 
 	}
 	for m := range messageCh {
-		if reflect.TypeOf(m.Value).Name() == "ConnectionStateUpdated" {
-			// wifi,name=„Küche“,deviceID=„08DF1F117BB7“ wifiStrength=82,connected=true
-			c, _ := m.Value.(soundtouch.ConnectionStateUpdated)
-			lineproto := fmt.Sprintf("wifi,name=\"%s\",deviceID=\"%s\" wifiStrength=%v,connected=\"%v\"",
-				soundtouchNetwork[m.DeviceId],
-				m.DeviceId,
-				strengthMapping[c.Signal],
-				func() string {
-					if c.Up == "true" {
-						return "UP"
-					}
-					return "DOWN"
-				}())
-			log.WithFields(log.Fields{
-				"database": "telegraf"}).Infof(lineproto)
-			result, err := influxDBinstance.SetData("write", []byte(lineproto))
+		mLogger := log.WithFields(log.Fields{
+			"Speaker": m.DeviceId,
+			"Value":   reflect.TypeOf(m.Value).Name(),
+		})
+		v, _ := m.Lineproto(influxDB, m)
+		if !conf.DryRun && v != "" {
+			result, err := influxDB.SetData("write", []byte(v))
 			if err != nil {
-				log.WithFields(log.Fields{
-					"influx": "send"}).Infof("failed")
+				mLogger.Errorf("failed")
 			}
-			log.WithFields(log.Fields{
-				"influx": "send"}).Debugf("succeeded: %v", string(result))
-		} else if reflect.TypeOf(m.Value).Name() == "NowPlaying" {
-			np, _ := m.Value.(soundtouch.NowPlaying)
-			lineproto := fmt.Sprintf("playing,name=\"%s\",deviceID=\"%s\" playStatus=%v,album=\"%v\"",
-				soundtouchNetwork[m.DeviceId],
-				m.DeviceId,
-				func() int {
-					ps := playStateMapping[np.PlayStatus]
-					if ps == 0 && np.Source == "STANDBY" {
-						return playStateMapping["STANDBY"]
-					}
-					return ps
-				}(),
-				func() string {
-					if np.Album == "" {
-						return "none"
-					}
-					return np.Album
-				}())
-			log.WithFields(log.Fields{
-				"database": "telegraf"}).Infof(lineproto)
-			result, err := influxDBinstance.SetData("write", []byte(lineproto))
-			if err != nil {
-				log.WithFields(log.Fields{
-					"influx": "send"}).Infof("failed")
-			}
-			log.WithFields(log.Fields{
-				"influx": "send"}).Debugf("succeeded: %v", string(result))
-		} else {
-			log.Infof("%v -> %v\n", soundtouchNetwork[m.DeviceId], reflect.TypeOf(m.Value).Name())
+			mLogger.Debugf("succeeded: %v", string(result))
+
+		} else if v != "" {
+			fmt.Printf("curl -i -XPOST \"%v\" --data-binary '%v'\n", influxDB.WriteURL(), v)
 		}
 	}
 	wg.Wait()
