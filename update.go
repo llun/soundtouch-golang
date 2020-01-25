@@ -90,10 +90,10 @@ func NewUpdate(body []byte) (*Update, error) {
 		}
 		return &Update{deviceID, preset}, nil
 	default:
-		return nil, nil
+		return nil, fmt.Errorf("Unhandeld Update Message. %v", string(body))
 	}
 }
 
 func (u Update) String() string {
-	return fmt.Sprintf("DeviceId(%v) updated %v", u.DeviceId, u.Value)
+	return fmt.Sprintf("%v", u.Value)
 }
