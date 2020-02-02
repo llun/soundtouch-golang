@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<nowPlaying deviceID="08DF1F117BB7" source="LOCAL_INTERNET_RADIO" sourceAccount="">
+    <ContentItem source="LOCAL_INTERNET_RADIO" type="stationurl" location="https://content.api.bose.io/core02/svc-bmx-adapter-orion/prod/orion/station?data=eyJuYW1lIjoiUmFkaW8gRWlucyIsImltYWdlVXJsIjoiIiwic3RyZWFtVXJsIjoiaHR0cDovL3d3dy5yYWRpb2VpbnMuZGUvbGl2ZS5tM3UifQ%3D%3D" sourceAccount="" isPresetable="true">
+        <itemName>Radio Eins</itemName>
+        <containerArt></containerArt>
+    </ContentItem>
+    <track>Radio Eins</track>
+    <artist></artist>
+    <album></album>
+    <stationName>Radio Eins</stationName>
+    <art artImageStatus="SHOW_DEFAULT_IMAGE" />
+    <playStatus>BUFFERING_STATE</playStatus>
+    <streamType>RADIO_STREAMING</streamType>
+</nowPlaying>

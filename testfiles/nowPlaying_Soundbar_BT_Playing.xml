@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<nowPlaying deviceID="9884E39B34BE" source="BLUETOOTH" sourceAccount="">
+    <ContentItem source="BLUETOOTH" location="" sourceAccount="" isPresetable="false">
+        <itemName>iPhone von Theofanis</itemName>
+    </ContentItem>
+    <track>Once in a Lifetime - 2005 Remaster</track>
+    <artist>Talking Heads</artist>
+    <album>Remain in Light (Deluxe Version)</album>
+    <stationName>iPhone von Theofanis</stationName>
+    <art artImageStatus="SHOW_DEFAULT_IMAGE" />
+    <skipEnabled />
+    <playStatus>PLAY_STATE</playStatus>
+    <skipPreviousEnabled />
+    <genre></genre>
+    <connectionStatusInfo status="CONNECTED" deviceName="iPhone von Theofanis" />
+</nowPlaying>

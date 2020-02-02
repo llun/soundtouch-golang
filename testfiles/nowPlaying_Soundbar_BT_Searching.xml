@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<nowPlaying deviceID="9884E39B34BE" source="BLUETOOTH" sourceAccount="">
+    <ContentItem source="BLUETOOTH" location="" sourceAccount="" isPresetable="false">
+        <itemName></itemName>
+    </ContentItem>
+    <track></track>
+    <artist></artist>
+    <album></album>
+    <stationName></stationName>
+    <art artImageStatus="SHOW_DEFAULT_IMAGE" />
+    <playStatus>INVALID_PLAY_STATUS</playStatus>
+    <connectionStatusInfo status="CONNECTING" deviceName="TV Audio Dongle" />
+</nowPlaying>

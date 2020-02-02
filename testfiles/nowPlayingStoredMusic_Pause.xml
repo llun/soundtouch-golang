@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<nowPlaying deviceID="08DF1F1A065C" source="STORED_MUSIC" sourceAccount="55076f6e-6b79-1d65-a471-00089bea8bd7/0">
+    <ContentItem source="STORED_MUSIC" location="0$1$18$213$12377$12389" sourceAccount="55076f6e-6b79-1d65-a471-00089bea8bd7/0" isPresetable="true">
+        <itemName>Ploutarchos 2</itemName>
+    </ContentItem>
+    <track>Xrwma tis zwis</track>
+    <artist>Giannis Ploutarxos</artist>
+    <album>Ploutarchos 2</album>
+    <offset>10</offset>
+    <art artImageStatus="IMAGE_PRESENT">http://192.168.178.50:9000/disk/DLNA-PNJPEG_TN-OP01-CI1-FLAGS00d00000/defaa/A/O0$1$8I2084108.jpg?scale=org</art>
+    <time total="232">43</time>
+    <skipEnabled />
+    <playStatus>PAUSE_STATE</playStatus>
+    <shuffleSetting>SHUFFLE_OFF</shuffleSetting>
+    <repeatSetting>REPEAT_OFF</repeatSetting>
+    <skipPreviousEnabled />
+</nowPlaying>

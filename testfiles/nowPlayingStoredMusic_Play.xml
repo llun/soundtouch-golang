@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<nowPlaying deviceID="08DF1F1A065C" source="STORED_MUSIC" sourceAccount="55076f6e-6b79-1d65-a471-00089bea8bd7/0">
+    <ContentItem source="STORED_MUSIC" location="0$1$18$213$18724$18726" sourceAccount="55076f6e-6b79-1d65-a471-00089bea8bd7/0" isPresetable="true">
+        <itemName>Platinum Edition</itemName>
+    </ContentItem>
+    <track>sorry</track>
+    <artist>Elli Kokkinou</artist>
+    <album>Platinum Edition</album>
+    <offset>6</offset>
+    <art artImageStatus="IMAGE_PRESENT">http://192.168.178.50:9000/disk/DLNA-PNPNG_TN-OP01-CI1-FLAGS00d00000/defaa/A/O0$1$8I3478028.png?scale=org</art>
+    <time total="245">189</time>
+    <skipEnabled />
+    <playStatus>PLAY_STATE</playStatus>
+    <shuffleSetting>SHUFFLE_OFF</shuffleSetting>
+    <repeatSetting>REPEAT_OFF</repeatSetting>
+    <skipPreviousEnabled />
+</nowPlaying>

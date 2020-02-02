@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<nowPlaying deviceID="08DF1F117BB7" source="TUNEIN" sourceAccount="">
+    <ContentItem source="TUNEIN" type="stationurl" location="/v1/playback/station/s17211" sourceAccount="" isPresetable="true">
+        <itemName>105 5 Spreeradio</itemName>
+        <containerArt>http://cdn-profiles.tunein.com/s17211/images/logoq.png</containerArt>
+    </ContentItem>
+    <track>Spreeradio Live</track>
+    <artist>Die besten Songs von den 80ern bis heute.</artist>
+    <album></album>
+    <stationName>Spreeradio Live</stationName>
+    <art artImageStatus="IMAGE_PRESENT">http://cdn-profiles.tunein.com/s17211/images/logoq.png?t=1</art>
+    <favoriteEnabled />
+    <playStatus>PLAY_STATE</playStatus>
+    <streamType>RADIO_STREAMING</streamType>
+</nowPlaying>
