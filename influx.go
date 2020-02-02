@@ -17,7 +17,7 @@ var strengthMapping = map[string]int{
 	"EXCELLENT_SIGNAL": 100, "GOOD_SIGNAL": 70, "POOR_SIGNAL": 30, "MARGINAL_SIGNAL": 10,
 }
 
-var playStateMapping = map[Source]int{
+var playStateMapping = map[PlayStatus]int{
 	"PLAY_STATE": 1, "PAUSE_STATE": 2, "STOP_STATE": 3, "STANDBY": 5, "BUFFERING_STATE": 8, "INVALID_PLAY_STATUS": 13,
 }
 

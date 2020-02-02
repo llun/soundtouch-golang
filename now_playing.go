@@ -4,26 +4,40 @@ import (
 	"encoding/xml"
 )
 
+type PlayStatus string
+
+const (
+	PLAY_STATE          = "PLAY_STATE"
+	PAUSE_STATE         = "PAUSE_STATE"
+	BUFFERING_STATE     = "BUFFERING_STATE"
+	INVALID_PLAY_STATUS = "INVALID_PLAY_STATUS"
+	STOP_STATE          = "STOP"
+	STANDBY             = "STANDBY"
+)
+
 type Source string
 
 const (
-	SLAVE          = "SLAVE_SOURCE"
-	INTERNET_RADIO = "INTERNET_RADIO"
-	PANDORA        = "PANDORA"
-	AIRPLAY        = "AIRPLAY"
-	STORED_MUSIC   = "STORED_MUSIC"
-	AUX            = "AUX"
-	OFF_SOURCE     = "OFF_SOURCE"
-	CURRATED_RADIO = "CURRATED_RADIO"
-	STANDBY        = "STANDBY"
-	UPDATE         = "UPDATE"
-	DEEZER         = "DEEZER"
-	SPOTIFY        = "SPOTIFY"
-	IHEART         = "IHEART"
+	SLAVE                = "SLAVE_SOURCE"
+	INTERNET_RADIO       = "INTERNET_RADIO"
+	LOCAL_INTERNET_RADIO = "LOCAL_INTERNET_RADIO"
+	PANDORA              = "PANDORA"
+	TUNEIN               = "TUNEIN"
+	AIRPLAY              = "AIRPLAY"
+	STORED_MUSIC         = "STORED_MUSIC"
+	AUX                  = "AUX"
+	BLUETOOTH            = "BLUETOOTH"
+	PRODUCT              = "PRODUCT"
+	OFF_SOURCE           = "OFF_SOURCE"
+	CURRATED_RADIO       = "CURRATED_RADIO"
+	UPDATE               = "UPDATE"
+	DEEZER               = "DEEZER"
+	SPOTIFY              = "SPOTIFY"
+	IHEART               = "IHEART"
 )
 
 type NowPlaying struct {
-	PlayStatus    Source      `xml:"playStatus"`
+	PlayStatus    PlayStatus  `xml:"playStatus"`
 	Source        string      `xml:"source,attr"`
 	SourceAccount string      `xml:"sourceAccount,attr"`
 	DeviceId      string      `xml:"deviceID,attr"`
@@ -33,6 +47,7 @@ type NowPlaying struct {
 	Album         string      `xml:"album"`
 	TrackID       string      `xml:"trackID"`
 	Art           string      `xml:"art"`
+	StreamType    string      `xml:"streamType"`
 	Raw           []byte
 }
 
