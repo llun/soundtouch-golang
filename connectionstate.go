@@ -1,6 +1,8 @@
 package soundtouch
 
-import "fmt"
+import (
+	"fmt"
+)
 
 const (
 	WIFI = "NETWORK_WIFI_CONNECTED"

@@ -3,11 +3,12 @@ package soundtouch
 import (
 	"bytes"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/gorilla/websocket"
 	"github.com/hashicorp/mdns"
