@@ -8,6 +8,8 @@ github.com/hashicorp/go-multierror v1.0.0 h1:iVjPR7a6H0tWELX5NxNe7bYopibicUzc7uP
 github.com/hashicorp/go-multierror v1.0.0/go.mod h1:dHtQlpGsu+cZNNAkkCN/P3hoUDHhCYQXV3UM06sGGrk=
 github.com/hashicorp/mdns v1.0.3 h1:hPneYJlzSjxFBmUlnDGXRykxBZ++dQAJhU57gCO7TzI=
 github.com/hashicorp/mdns v1.0.3/go.mod h1:P9sIDVQGUBr2GtS4qS2QCBdtgqP7TBt6d8looU5l5r4=
+github.com/jarcoal/httpmock v1.0.4 h1:jp+dy/+nonJE4g4xbVtl9QdrUNbn6/3hDT5R4nDIZnA=
+github.com/jarcoal/httpmock v1.0.4/go.mod h1:ATjnClrvW/3tijVmpL/va5Z3aAyGvqU3gCT8nX0Txik=
 github.com/jcelliott/lumber v0.0.0-20160324203708-dd349441af25 h1:EFT6MH3igZK/dIVqgGbTqWVvkZ7wJ5iGN03SVtvvdd8=
 github.com/jcelliott/lumber v0.0.0-20160324203708-dd349441af25/go.mod h1:sWkGw/wsaHtRsT9zGQ/WyJCotGWG/Anow/9hsAcBWRw=
 github.com/jpillora/opts v1.1.2 h1:54/W0/fvo1DexHbL2utsW4rDhr5RXgojsPD2TA5oEzI=
