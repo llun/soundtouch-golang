@@ -5,6 +5,7 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"reflect"
 )
 
 type Update struct {
@@ -96,4 +97,8 @@ func NewUpdate(body []byte) (*Update, error) {
 
 func (u Update) String() string {
 	return fmt.Sprintf("%v", u.Value)
+}
+
+func (u Update) Is(msgTypeName string) bool {
+	return reflect.TypeOf(u.Value).Name() == msgTypeName
 }
