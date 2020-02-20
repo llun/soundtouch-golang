@@ -21,14 +21,16 @@ var playStateMapping = map[PlayStatus]int{
 	"PLAY_STATE": 1, "PAUSE_STATE": 2, "STOP_STATE": 3, "STANDBY": 5, "BUFFERING_STATE": 8, "INVALID_PLAY_STATUS": 13,
 }
 
+// InfluxDB configures access to the influxdb instance
 type InfluxDB struct {
 	BaseHTTPURL       url.URL
 	Database          string
 	SoundtouchNetwork map[string]string
 }
 
+// SetData sends POST request to the database
 func (i *InfluxDB) SetData(action string, input []byte) ([]byte, error) {
-	actionURL, _ := url.Parse(i.WriteURL())
+	actionURL, _ := url.Parse(i.WriteURL(action))
 	buffer := bytes.NewBuffer(input)
 	// log.Debugf("Going to send action: %v, %v", action, string(input))
 	resp, err := http.Post(actionURL.String(), "", buffer)
@@ -43,32 +45,35 @@ func (i *InfluxDB) SetData(action string, input []byte) ([]byte, error) {
 	return body, nil
 }
 
-func (i *InfluxDB) WriteURL() string {
-	return fmt.Sprintf("%v/write?db=%v", i.BaseHTTPURL.String(), i.Database)
+// WriteURL constructs the full URL including and up until database in the form
+// http://influx/write?db=mydata
+func (i *InfluxDB) WriteURL(action string) string {
+	return fmt.Sprintf("%v/%s?db=%v", i.BaseHTTPURL.String(), action, i.Database)
 }
 
+// Lineproto returns a lineproto encoding of the Update message
 func (u *Update) Lineproto(i InfluxDB, message *Update) (string, error) {
 	typeName := reflect.TypeOf(message.Value).Name()
 	switch typeName {
 	case "ConnectionStateUpdated":
 		c, _ := message.Value.(ConnectionStateUpdated)
-		return c.Lineproto(i, message)
+		return c.lineproto(i, message)
 	case "NowPlaying":
 		np, _ := message.Value.(NowPlaying)
-		return np.Lineproto(i, message)
+		return np.lineproto(i, message)
 	case "Volume":
 		v, _ := message.Value.(Volume)
-		return v.Lineproto(i, message)
+		return v.lineproto(i, message)
 	default:
 		return "", fmt.Errorf("lineproto: no lineproto for this Update-type %v", typeName)
 
 	}
 }
 
-func (s *ConnectionStateUpdated) Lineproto(i InfluxDB, message *Update) (string, error) {
+func (s *ConnectionStateUpdated) lineproto(i InfluxDB, message *Update) (string, error) {
 	lineproto := fmt.Sprintf(lineProtoFmtCSU,
-		i.SoundtouchNetwork[message.DeviceId],
-		message.DeviceId,
+		i.SoundtouchNetwork[message.DeviceID],
+		message.DeviceID,
 		strengthMapping[s.Signal],
 		func() string {
 			if s.Up == "true" {
@@ -79,19 +84,19 @@ func (s *ConnectionStateUpdated) Lineproto(i InfluxDB, message *Update) (string,
 	return lineproto, nil
 }
 
-func (v *Volume) Lineproto(i InfluxDB, message *Update) (string, error) {
+func (v *Volume) lineproto(i InfluxDB, message *Update) (string, error) {
 	lineproto := fmt.Sprintf(lineProtoFmtVU,
-		i.SoundtouchNetwork[message.DeviceId],
-		message.DeviceId,
+		i.SoundtouchNetwork[message.DeviceID],
+		message.DeviceID,
 		v.TargetVolume,
 	)
 	return lineproto, nil
 }
 
-func (s *NowPlaying) Lineproto(i InfluxDB, message *Update) (string, error) {
+func (s *NowPlaying) lineproto(i InfluxDB, message *Update) (string, error) {
 	lineproto := fmt.Sprintf(lineProtoFmtNP,
-		i.SoundtouchNetwork[message.DeviceId],
-		message.DeviceId,
+		i.SoundtouchNetwork[message.DeviceID],
+		message.DeviceID,
 		func() int {
 			ps := playStateMapping[s.PlayStatus]
 			if ps == 0 && s.Source == "STANDBY" {

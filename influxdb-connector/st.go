@@ -110,7 +110,7 @@ func main() {
 	}
 	for m := range messageCh {
 		mLogger := log.WithFields(log.Fields{
-			"Speaker": m.DeviceId,
+			"Speaker": m.DeviceID,
 			"Value":   reflect.TypeOf(m.Value).Name(),
 		})
 		v, _ := m.Lineproto(influxDB, m)
@@ -122,7 +122,7 @@ func main() {
 			mLogger.Debugf("succeeded: %v", string(result))
 
 		} else if v != "" {
-			fmt.Printf("curl -i -XPOST \"%v\" --data-binary '%v'\n", influxDB.WriteURL(), v)
+			fmt.Printf("curl -i -XPOST \"%v\" --data-binary '%v'\n", influxDB.WriteURL("write"), v)
 		}
 	}
 	wg.Wait()

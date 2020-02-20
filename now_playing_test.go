@@ -53,9 +53,9 @@ func TestSpeaker_NowPlaying(t *testing.T) {
 			route:        "http://192.168.178.52:8090/now_playing",
 			fields:       f1,
 			want: NowPlaying{
-				PlayStatus: BUFFERING_STATE,
-				Source:     LOCAL_INTERNET_RADIO,
-				DeviceId:   "08DF1F117BB7",
+				PlayStatus: BufferingState,
+				Source:     LocalInternetRadio,
+				DeviceID:   "08DF1F117BB7",
 				Content: ContentItem{
 					Source:       "LOCAL_INTERNET_RADIO",
 					Type:         "stationurl",
@@ -76,10 +76,10 @@ func TestSpeaker_NowPlaying(t *testing.T) {
 			route:        "http://192.168.178.52:8090/now_playing",
 			fields:       f1,
 			want: NowPlaying{
-				PlayStatus:    PAUSE_STATE,
-				Source:        STORED_MUSIC,
+				PlayStatus:    PauseState,
+				Source:        StoredMusic,
 				SourceAccount: "55076f6e-6b79-1d65-a471-00089bea8bd7/0",
-				DeviceId:      "08DF1F1A065C",
+				DeviceID:      "08DF1F1A065C",
 				Content: ContentItem{
 					Source:       "STORED_MUSIC",
 					Name:         "Ploutarchos 2",
@@ -101,9 +101,9 @@ func TestSpeaker_NowPlaying(t *testing.T) {
 			route:        "http://192.168.178.52:8090/now_playing",
 			fields:       f1,
 			want: NowPlaying{
-				PlayStatus: PLAY_STATE,
-				Source:     LOCAL_INTERNET_RADIO,
-				DeviceId:   "08DF1F117BB7",
+				PlayStatus: PlayState,
+				Source:     LocalInternetRadio,
+				DeviceID:   "08DF1F117BB7",
 				Content: ContentItem{
 					Source:       "LOCAL_INTERNET_RADIO",
 					Type:         "stationurl",
@@ -124,9 +124,9 @@ func TestSpeaker_NowPlaying(t *testing.T) {
 			route:        "http://192.168.178.52:8090/now_playing",
 			fields:       f1,
 			want: NowPlaying{
-				PlayStatus: PLAY_STATE,
-				Source:     TUNEIN,
-				DeviceId:   "08DF1F117BB7",
+				PlayStatus: PlayState,
+				Source:     TuneIn,
+				DeviceID:   "08DF1F117BB7",
 				Content: ContentItem{
 					Source:       "TUNEIN",
 					Type:         "stationurl",
@@ -149,9 +149,9 @@ func TestSpeaker_NowPlaying(t *testing.T) {
 			route:        "http://192.168.178.52:8090/now_playing",
 			fields:       f1,
 			want: NowPlaying{
-				PlayStatus: PLAY_STATE,
-				Source:     AUX,
-				DeviceId:   "08DF1F117BB7",
+				PlayStatus: PlayState,
+				Source:     Aux,
+				DeviceID:   "08DF1F117BB7",
 				Content: ContentItem{
 					Source:       "AUX",
 					Name:         "AUX IN",
@@ -168,10 +168,10 @@ func TestSpeaker_NowPlaying(t *testing.T) {
 			route:        "http://192.168.178.52:8090/now_playing",
 			fields:       f1,
 			want: NowPlaying{
-				PlayStatus:    PLAY_STATE,
+				PlayStatus:    PlayState,
 				Source:        "PRODUCT",
 				SourceAccount: "TV",
-				DeviceId:      "9884E39B34BE",
+				DeviceID:      "9884E39B34BE",
 				Content: ContentItem{
 					Source:       "PRODUCT",
 					IsPresetable: false,
@@ -187,9 +187,9 @@ func TestSpeaker_NowPlaying(t *testing.T) {
 			route:        "http://192.168.178.52:8090/now_playing",
 			fields:       f1,
 			want: NowPlaying{
-				PlayStatus: INVALID_PLAY_STATUS,
+				PlayStatus: InvalidPlayStatus,
 				Source:     "BLUETOOTH",
-				DeviceId:   "9884E39B34BE",
+				DeviceID:   "9884E39B34BE",
 				Content: ContentItem{
 					Source:       "BLUETOOTH",
 					IsPresetable: false,
@@ -206,8 +206,8 @@ func TestSpeaker_NowPlaying(t *testing.T) {
 			route:        "http://192.168.178.52:8090/now_playing",
 			fields:       f1,
 			want: NowPlaying{
-				Source:   STANDBY,
-				DeviceId: "08DF1F0E9E36",
+				Source:   Standby,
+				DeviceID: "08DF1F0E9E36",
 				Content: ContentItem{
 					Source: "STANDBY",
 				},
@@ -222,10 +222,10 @@ func TestSpeaker_NowPlaying(t *testing.T) {
 			route:        "http://192.168.178.52:8090/now_playing",
 			fields:       f1,
 			want: NowPlaying{
-				PlayStatus:    PLAY_STATE,
-				Source:        STORED_MUSIC,
+				PlayStatus:    PlayState,
+				Source:        StoredMusic,
 				SourceAccount: "55076f6e-6b79-1d65-a471-00089bea8bd7/0",
-				DeviceId:      "08DF1F1A065C",
+				DeviceID:      "08DF1F1A065C",
 				Content: ContentItem{
 					Source:       "STORED_MUSIC",
 					Name:         "Platinum Edition",
@@ -247,10 +247,10 @@ func TestSpeaker_NowPlaying(t *testing.T) {
 			route:        "http://192.168.178.52:8090/now_playing",
 			fields:       f1,
 			want: NowPlaying{
-				PlayStatus:    PAUSE_STATE,
-				Source:        BLUETOOTH,
+				PlayStatus:    PauseState,
+				Source:        Bluetooth,
 				SourceAccount: "",
-				DeviceId:      "9884E39B34BE",
+				DeviceID:      "9884E39B34BE",
 				Content: ContentItem{
 					Source:       "BLUETOOTH",
 					Name:         "iPhone von Theofanis",
@@ -272,10 +272,10 @@ func TestSpeaker_NowPlaying(t *testing.T) {
 			route:        "http://192.168.178.52:8090/now_playing",
 			fields:       f1,
 			want: NowPlaying{
-				PlayStatus:    PLAY_STATE,
-				Source:        BLUETOOTH,
+				PlayStatus:    PlayState,
+				Source:        Bluetooth,
 				SourceAccount: "",
-				DeviceId:      "9884E39B34BE",
+				DeviceID:      "9884E39B34BE",
 				Content: ContentItem{
 					Source:       "BLUETOOTH",
 					Name:         "iPhone von Theofanis",

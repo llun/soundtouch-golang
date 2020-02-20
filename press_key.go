@@ -4,37 +4,40 @@ import (
 	"fmt"
 )
 
+// Key typing
 type Key string
 
+// All soundtouch key constants
 const (
-	PLAY            = "PLAY"
-	PAUSE           = "PAUSE"
-	STOP            = "STOP"
-	PREV_TRACK      = "PREV_TRACK"
-	NEXT_TRACK      = "NEXT_TRACK"
-	THUMBS_UP       = "THUMBS_UP"
-	THUMBS_DOWN     = "THUMBS_DOWN"
-	BOOKMARK        = "BOOKMARK"
-	POWER           = "POWER"
-	MUTE            = "MUTE"
-	VOLUME_UP       = "VOLUME_UP"
-	VOLUME_DOWN     = "VOLUME_DOWN"
-	PRESET_1        = "PRESET_1"
-	PRESET_2        = "PRESET_2"
-	PRESET_3        = "PRESET_3"
-	PRESET_4        = "PRESET_4"
-	PRESET_5        = "PRESET_5"
-	PRESET_6        = "PRESET_6"
-	AUX_INPUT       = "AUX_INPUT"
-	SHUFFLE_OFF     = "SHUFFLE_OFF"
-	SHUFFLE_ON      = "SHUFFLE_ON"
-	REPEAT_OFF      = "REPEAT_OFF"
-	REPEAT_ONE      = "REPEAT_ONE"
-	REPEAT_ALL      = "REPEAT_ALL"
-	ADD_FAVORITE    = "ADD_FAVORITE"
-	REMOVE_FAVORITE = "REMOVE_FAVORITE"
+	PLAY           = "PLAY"
+	PAUSE          = "PAUSE"
+	STOP           = "STOP"
+	PREVTRACK      = "PREV_TRACK"
+	NEXTTRACK      = "NEXT_TRACK"
+	THUMBSUP       = "THUMBS_UP"
+	THUMBSDOWN     = "THUMBS_DOWN"
+	BOOKMARK       = "BOOKMARK"
+	POWER          = "POWER"
+	MUTE           = "MUTE"
+	VOLUMEUP       = "VOLUME_UP"
+	VOLUMEDOWN     = "VOLUME_DOWN"
+	PRESET1        = "PRESET_1"
+	PRESET2        = "PRESET_2"
+	PRESET3        = "PRESET_3"
+	PRESET4        = "PRESET_4"
+	PRESET5        = "PRESET_5"
+	PRESET6        = "PRESET_6"
+	AUXINPUT       = "AUX_INPUT"
+	SHUFFLEOFF     = "SHUFFLE_OFF"
+	SHUFFLEON      = "SHUFFLE_ON"
+	REPEATOFF      = "REPEAT_OFF"
+	REPEATONE      = "REPEAT_ONE"
+	REPEATALL      = "REPEAT_ALL"
+	ADDFAVORITE    = "ADD_FAVORITE"
+	REMOVEFAVORITE = "REMOVE_FAVORITE"
 )
 
+// PressKey send key press/release pair to soundtouch system
 func (s *Speaker) PressKey(key Key) error {
 	press := []byte(fmt.Sprintf(`<key state="press" sender="Gabbo">%v</key>`, key))
 	_, err := s.SetData("key", press)

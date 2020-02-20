@@ -55,7 +55,7 @@ func (m *MagicSpeaker) UpdateAlbumDB(album string, updateMsg MagicUpdate) *DbEnt
 		// HYPO: We are in observation window, then the current volume could also
 		// be a good measurement
 		storedAlbum.Volume = retrievedVol.TargetVolume
-		storedAlbum.DeviceID = updateMsg.DeviceId
+		storedAlbum.DeviceID = updateMsg.DeviceID
 		storedAlbum.LastUpdated = time.Now()
 		storedAlbum.ContentItem = updateMsg.ContentItem()
 		m.WriteDB(album, storedAlbum)
