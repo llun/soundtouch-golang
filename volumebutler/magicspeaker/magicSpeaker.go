@@ -44,7 +44,7 @@ func (m *MagicSpeaker) WriteDB(album string, storedAlbum *DbEntry) {
 	m.ScribbleDb.Write(m.SpeakerName, album, &storedAlbum)
 }
 
-func (m *MagicSpeaker) UpdateAlbumDB(album string, updateMsg MagicUpdate) *DbEntry {
+func (m *MagicSpeaker) ReadAlbumDB(album string, updateMsg MagicUpdate) *DbEntry {
 
 	storedAlbum := m.ReadDB(album, &DbEntry{})
 
@@ -117,20 +117,21 @@ func (m *MagicSpeaker) HandleUpdate(msg MagicUpdate, webSocketCh chan *soundtouc
 	}
 
 	// time window independend
-	// read from database: Do we know this album already?
-	storedAlbum := m.UpdateAlbumDB(album, msg)
+	// Do we know this album already?  - read from database
+	storedAlbum := m.ReadAlbumDB(album, msg)
 
 	// time window and speaker depended
 	// 		if available for this album
 	//			set the volume
-	if storedAlbum.Volume != 0 {
+	if storedAlbum.Volume != 0 && time.Now().After(storedAlbum.LastUpdated.Add(20*time.Minute)) {
+		// Only setting a volume if it was last update more than 20 minutes ago
 		m.SetVolume(storedAlbum.Volume)
 	}
 
 	// wait for a minute and process last volume observed
 	// construct the mean value of current and past volumes
 	// store the update value
-	time.Sleep(20 * time.Second)
+	time.Sleep(60 * time.Second)
 
 	// clear message and keep last volume update
 	lastVolume := m.ScanForVolume()

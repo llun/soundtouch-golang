@@ -87,7 +87,7 @@ func main() {
 	}
 	for m := range messageCh {
 		mLogger := log.WithFields(log.Fields{
-			"Speaker": influxDB.SoundtouchNetwork[m.DeviceId],
+			"Speaker": influxDB.SoundtouchNetwork[m.DeviceID],
 			"Value":   reflect.TypeOf(m.Value).Name(),
 		})
 		mLogger.Infof("%v\n", m)

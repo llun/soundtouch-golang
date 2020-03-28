@@ -24,7 +24,7 @@ type config struct {
 	Speakers  []string  `opts:"group=Soundtouch" help:"Speakers to listen for, all if not set"`
 	Interface string    `opts:"group=Soundtouch" help:"network interface to listen"`
 	LogLevel  log.Level `help:"Log level, one of panic, fatal, error, warn or warning, info, debug, trace"`
-	Filename  string    `opts:"group=AutoAdjust" help:"Where to store the data"`
+	Filename  string    `opts:"group=VolumeButler" help:"Where to store the data"`
 }
 type speakerMap map[string]bool
 
