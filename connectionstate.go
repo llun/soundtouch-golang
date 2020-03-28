@@ -4,10 +4,12 @@ import (
 	"fmt"
 )
 
+// All network connection types
 const (
 	WIFI = "NETWORK_WIFI_CONNECTED"
 )
 
+// ConnectionStateUpdated defines the message communicated with the soundtouch system
 type ConnectionStateUpdated struct {
 	// state="NETWORK_WIFI_CONNECTED" up="true" signal="MARGINAL_SIGNAL"
 	State  string `xml:"state,attr"`
@@ -15,21 +17,22 @@ type ConnectionStateUpdated struct {
 	Signal string `xml:"signal,attr"`
 }
 
+// String readable representation of message
 func (c ConnectionStateUpdated) String() string {
 
 	return fmt.Sprintf("Connection: {%v, %v = %v}",
 		func() string {
 			if c.State == WIFI {
 				return "WIFI"
-			} else {
-				return "NETWORK"
 			}
+			return "NETWORK"
+
 		}(),
 		func() string {
 			if c.Up == "true" {
 				return "UP"
-			} else {
-				return "DOWN"
 			}
+			return "DOWN"
+
 		}(), c.Signal)
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 )
 
+// Volume defines the Volume command
 type Volume struct {
 	DeviceID     string `xml:"deviceID,attr"`
 	TargetVolume int    `xml:"targetvolume"`
@@ -13,6 +14,7 @@ type Volume struct {
 	Raw          []byte
 }
 
+// Volume sends the volume command to the soundtouch system to retrieve the volume
 func (s *Speaker) Volume() (Volume, error) {
 	body, err := s.GetData("volume")
 	if err != nil {
@@ -29,6 +31,7 @@ func (s *Speaker) Volume() (Volume, error) {
 	return volume, nil
 }
 
+// SetVolume sends the volume command to the soundtouch system to set the volume
 func (s *Speaker) SetVolume(volume int) error {
 	data := []byte(fmt.Sprintf("<volume>%v</volume>", volume))
 	_, err := s.SetData("volume", data)

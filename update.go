@@ -5,13 +5,16 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"reflect"
 )
 
+// Update carries all update messages communicated to/from soundtouch system
 type Update struct {
-	DeviceId string
+	DeviceID string
 	Value    interface{}
 }
 
+// NewUpdate returns an Update decoded from a received message
 func NewUpdate(body []byte) (*Update, error) {
 	decoder := xml.NewDecoder(bytes.NewBuffer(body))
 	root, err := decoder.Token()
@@ -94,6 +97,12 @@ func NewUpdate(body []byte) (*Update, error) {
 	}
 }
 
+// String returns the specific part of an update message
 func (u Update) String() string {
 	return fmt.Sprintf("%v", u.Value)
+}
+
+// Is returns true in case Update message is of type msgTypeName
+func (u Update) Is(msgTypeName string) bool {
+	return reflect.TypeOf(u.Value).Name() == msgTypeName
 }

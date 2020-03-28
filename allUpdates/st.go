@@ -62,12 +62,16 @@ func main() {
 
 	for speaker := range speakerCh {
 		di, _ := speaker.Info()
-		speaker.DeviceInfo = di
-		influxDB.SoundtouchNetwork[di.DeviceID] = di.Name
 		spkLogger := log.WithFields(log.Fields{
 			"Speaker": speaker.DeviceInfo.Name,
 			"ID":      speaker.DeviceInfo.DeviceID,
 		})
+		if len(conf.Speakers) > 0 && !isIn(di.Name, conf.Speakers) {
+			spkLogger.Traceln("Ignoring messages from: ", di.Name)
+			continue
+		}
+		speaker.DeviceInfo = di
+		influxDB.SoundtouchNetwork[di.DeviceID] = di.Name
 		spkLogger.Infof("Listening\n")
 		spkLogger.Debugf(" with IP: %v", speaker.IP)
 		wg.Add(1)
@@ -83,11 +87,20 @@ func main() {
 	}
 	for m := range messageCh {
 		mLogger := log.WithFields(log.Fields{
-			"Speaker": influxDB.SoundtouchNetwork[m.DeviceId],
+			"Speaker": influxDB.SoundtouchNetwork[m.DeviceID],
 			"Value":   reflect.TypeOf(m.Value).Name(),
 		})
 		mLogger.Infof("%v\n", m)
 
 	}
 	wg.Wait()
+}
+
+func isIn(name string, selected []string) bool {
+	for _, s := range selected {
+		if name == s {
+			return true
+		}
+	}
+	return false
 }

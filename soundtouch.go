@@ -14,9 +14,10 @@ import (
 	"github.com/hashicorp/mdns"
 )
 
-const WebsocketPort int = 8080
-const MessageBufferSize int = 256
+const websocketPort int = 8080
+const messageBufferSize int = 256
 
+// Speaker defines a soundtouch speaker
 type Speaker struct {
 	IP           net.IP
 	Port         int
@@ -26,6 +27,7 @@ type Speaker struct {
 	conn         *websocket.Conn
 }
 
+// Lookup listens via mdns for soundtouch speakers and returns Speaker channel
 func Lookup(iface *net.Interface) <-chan *Speaker {
 	speakerCh := make(chan *Speaker)
 	entriesCh := make(chan *mdns.ServiceEntry, 7)
@@ -46,6 +48,7 @@ func Lookup(iface *net.Interface) <-chan *Speaker {
 	return speakerCh
 }
 
+// NewSpeaker returns a new Speaker entity based on a mdns service entry
 func NewSpeaker(entry *mdns.ServiceEntry) *Speaker {
 	return &Speaker{
 		entry.AddrV4,
@@ -56,13 +59,14 @@ func NewSpeaker(entry *mdns.ServiceEntry) *Speaker {
 		},
 		url.URL{
 			Scheme: "ws",
-			Host:   fmt.Sprintf("%v:%v", entry.AddrV4.String(), WebsocketPort),
+			Host:   fmt.Sprintf("%v:%v", entry.AddrV4.String(), websocketPort),
 		},
 		Info{},
 		nil,
 	}
 }
 
+// Listen creates a listenes that distributes Update messages via channel
 func (s *Speaker) Listen() (chan *Update, error) {
 	spkLogger := log.WithFields(log.Fields{
 		"Speaker": s.DeviceInfo.Name,
@@ -79,7 +83,7 @@ func (s *Speaker) Listen() (chan *Update, error) {
 	}
 
 	s.conn = conn
-	messageCh := make(chan *Update, MessageBufferSize)
+	messageCh := make(chan *Update, messageBufferSize)
 	go func() {
 		for {
 			mLogger := log.WithFields(log.Fields{
@@ -108,15 +112,17 @@ func (s *Speaker) Listen() (chan *Update, error) {
 
 }
 
+// Close closes the socket to the soundtouch speaker
 func (s *Speaker) Close() error {
 	log.Debugf("Closing socket")
 	return s.conn.Close()
 }
 
+// GetData returns received raw data retrieved a GET for a given soundtouch action
 func (s *Speaker) GetData(action string) ([]byte, error) {
-	actionUrl := s.BaseHTTPURL
-	actionUrl.Path = action
-	resp, err := http.Get(actionUrl.String())
+	actionURL := s.BaseHTTPURL
+	actionURL.Path = action
+	resp, err := http.Get(actionURL.String())
 	if err != nil {
 		return nil, err
 	}
@@ -128,11 +134,12 @@ func (s *Speaker) GetData(action string) ([]byte, error) {
 	return body, nil
 }
 
+// SetData sets raw data via  POST for a given soundtouch action
 func (s *Speaker) SetData(action string, input []byte) ([]byte, error) {
-	actionUrl := s.BaseHTTPURL
-	actionUrl.Path = action
+	actionURL := s.BaseHTTPURL
+	actionURL.Path = action
 	buffer := bytes.NewBuffer(input)
-	resp, err := http.Post(actionUrl.String(), "application/xml", buffer)
+	resp, err := http.Post(actionURL.String(), "application/xml", buffer)
 	if err != nil {
 		return nil, err
 	}
