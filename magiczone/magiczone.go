@@ -47,7 +47,7 @@ func main() {
 
 	log.SetLevel(conf.LogLevel)
 
-	iff, _ := processConfig(conf)
+	iff, filteredSpeakers, _ := processConfig(conf)
 
 	var wg sync.WaitGroup
 	log.Infof("Scanning for Soundtouch systems.")
@@ -69,6 +69,12 @@ func main() {
 			}
 
 			ms := magicspeaker.New(speaker)
+
+			// check wether we might have to ignore the speaker
+			if len(filteredSpeakers) > 0 && !(filteredSpeakers)[speakerInfo.Name] {
+				// spkLogger.Traceln("Seen but ignoring messages from: ", speakerInfo.Name)
+				continue
+			}
 
 			visibleSpeakers[speaker.DeviceInfo.DeviceID] = ms
 			spkLogger.Infof("Listening\n")
@@ -93,7 +99,9 @@ func main() {
 }
 
 // Will create the interface, and the speakerMap
-func processConfig(conf config) (*net.Interface, error) {
+func processConfig(conf config) (*net.Interface, speakerMap, error) {
+	filteredSpeakers := make(speakerMap)
+
 	i, err := net.InterfaceByName(conf.Interface)
 
 	if err != nil {
@@ -102,7 +110,12 @@ func processConfig(conf config) (*net.Interface, error) {
 
 	log.Debugf("Listening @ %v, supports: %v, HW Address: %v\n", i.Name, i.Flags.String(), i.HardwareAddr)
 
-	return i, nil
+	for _, value := range conf.Speakers {
+		filteredSpeakers[value] = true
+		log.Debugf("Reacting only speakers %v\n", value)
+	}
+
+	return i, filteredSpeakers, nil
 }
 
 func checkInMap(deviceID string, list magicspeaker.MagicSpeakers) bool {
