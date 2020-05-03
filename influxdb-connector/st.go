@@ -6,14 +6,14 @@ import (
 	"net/url"
 	"reflect"
 	"sync"
+	"time"
 
 	"github.com/jpillora/opts"
 	log "github.com/sirupsen/logrus"
 
 	soundtouch "github.com/theovassiliou/soundtouch-golang"
+	"github.com/theovassiliou/soundtouch-golang/magiczone/magicspeaker"
 )
-
-// var soundtouchNetwork = make(map[string]string)
 
 var conf = config{}
 
@@ -25,6 +25,8 @@ var VERSION = "0.0" + version + "-src"
 
 const shortUsage = "Captures broadcastet information from your Bose Soundtouch systems."
 
+type speakerMap map[string]bool
+
 var influxDB = soundtouch.InfluxDB{
 	BaseHTTPURL: url.URL{
 		Scheme: "http",
@@ -35,20 +37,24 @@ var influxDB = soundtouch.InfluxDB{
 }
 
 type config struct {
-	Speakers  []string  `opts:"group=Soundtouch" help:"Speakers to listen for, all if not set"`
-	Interface string    `opts:"group=Soundtouch" help:"network interface to listen"`
-	InfluxURL string    `opts:"group=InfluxDB" help:"URL of the influx database"`
-	Database  string    `opts:"group=InfluxDB" help:"InfluxDB database to send the data to"`
-	DryRun    bool      `help:"Dump the lineprotocoll in curl format instead sending to influxdb"`
-	LogLevel  log.Level `help:"Log level, one of panic, fatal, error, warn or warning, info, debug, trace"`
+	Speakers            []string  `opts:"group=Soundtouch" help:"Speakers to listen for, all if not set"`
+	Interface           string    `opts:"group=Soundtouch" help:"network interface to listen"`
+	NoSoundtouchSystems int       `opts:"group=Soundtouch" help:"Number of Soundtouch systems to scan for."`
+	InfluxURL           string    `opts:"group=InfluxDB" help:"URL of the influx database"`
+	Database            string    `opts:"group=InfluxDB" help:"InfluxDB database to send the data to"`
+	DryRun              bool      `help:"Dump the lineprotocoll in curl format instead sending to influxdb"`
+	LogLevel            log.Level `help:"Log level, one of panic, fatal, error, warn or warning, info, debug, trace"`
 }
+
+var visibleSpeakers = make(magicspeaker.MagicSpeakers)
 
 func main() {
 	conf = config{
-		LogLevel:  log.DebugLevel,
-		InfluxURL: "http://influxdb:8086",
-		Database:  "soundtouch",
-		Interface: "en0",
+		NoSoundtouchSystems: -1,
+		LogLevel:            log.DebugLevel,
+		InfluxURL:           "http://influxdb:8086",
+		Database:            "soundtouch",
+		Interface:           "en0",
 	}
 
 	//parse config
@@ -68,46 +74,57 @@ func main() {
 	influxDB.BaseHTTPURL = *v
 	influxDB.Database = conf.Database
 
-	i, err := net.InterfaceByName(conf.Interface)
+	iff, filteredSpeakers, _ := processConfig(conf)
 
-	if err != nil {
-		log.Fatalf("Error with interface. %s", err)
-	}
-
-	log.Debugf("Listening @ %v, supports: %v, HW Address: %v\n", i.Name, i.Flags.String(), i.HardwareAddr)
-
-	speakerCh := soundtouch.Lookup(i)
 	var wg sync.WaitGroup
+	log.Infof("Scanning for Soundtouch systems.")
 	messageCh := make(chan *soundtouch.Update)
 
-	for speaker := range speakerCh {
-		di, _ := speaker.Info()
-		speaker.DeviceInfo = di
+	for ok := true; ok; ok = (len(visibleSpeakers) < conf.NoSoundtouchSystems) {
+		speakerCh := soundtouch.Lookup(iff)
 
-		spkLogger := log.WithFields(log.Fields{
-			"Speaker": speaker.DeviceInfo.Name,
-			"ID":      speaker.DeviceInfo.DeviceID,
-		})
+		for speaker := range speakerCh {
+			speakerInfo, _ := speaker.Info()
+			speaker.DeviceInfo = speakerInfo
+			spkLogger := log.WithFields(log.Fields{
+				"Speaker": speaker.DeviceInfo.Name,
+				"ID":      speaker.DeviceInfo.DeviceID,
+			})
 
-		if len(conf.Speakers) > 0 && !isIn(di.Name, conf.Speakers) {
-			spkLogger.Traceln("Ignoring messages from: ", di.Name)
-			continue
-		}
-
-		influxDB.SoundtouchNetwork[di.DeviceID] = di.Name
-		spkLogger.Infof("Listening\n")
-		spkLogger.Debugf(" with IP: %v", speaker.IP)
-		wg.Add(1)
-		go func(s *soundtouch.Speaker, msgChan chan *soundtouch.Update) {
-			defer wg.Done()
-
-			webSocketCh, _ := s.Listen()
-			for message := range webSocketCh {
-				msgChan <- message
+			if checkInMap(speaker.DeviceInfo.DeviceID, visibleSpeakers) {
+				spkLogger.Debugf("Already included. Ignoring.")
+				continue
 			}
-		}(speaker, messageCh)
 
+			ms := magicspeaker.New(speaker)
+
+			// check wether we might have to ignore the speaker
+			if len(filteredSpeakers) > 0 && !(filteredSpeakers)[speakerInfo.Name] {
+				// spkLogger.Traceln("Seen but ignoring messages from: ", speakerInfo.Name)
+				continue
+			}
+
+			visibleSpeakers[speaker.DeviceInfo.DeviceID] = ms
+			spkLogger.Infof("Listening\n")
+			spkLogger.Debugf(" with IP: %v", speaker.IP)
+			wg.Add(1)
+
+			// for each speaker we forward the messages to msgChan
+			go func(s *soundtouch.Speaker, msgChan chan *soundtouch.Update) {
+				defer wg.Done()
+
+				webSocketCh, _ := s.Listen()
+				for message := range webSocketCh {
+					msgChan <- message
+				}
+			}(speaker, messageCh)
+		}
+		time.Sleep(10 * time.Second)
 	}
+
+	log.Infof("Found all Soundtouch systems. Normal Operation.")
+
+	// We need only one loop for all messages.
 	for m := range messageCh {
 		mLogger := log.WithFields(log.Fields{
 			"Speaker": m.DeviceID,
@@ -130,6 +147,35 @@ func main() {
 func isIn(name string, selected []string) bool {
 	for _, s := range selected {
 		if name == s {
+			return true
+		}
+	}
+	return false
+}
+
+// Will create the interface, and the speakerMap
+func processConfig(conf config) (*net.Interface, speakerMap, error) {
+	filteredSpeakers := make(speakerMap)
+
+	i, err := net.InterfaceByName(conf.Interface)
+
+	if err != nil {
+		log.Fatalf("Error with interface. %s", err)
+	}
+
+	log.Debugf("Listening @ %v, supports: %v, HW Address: %v\n", i.Name, i.Flags.String(), i.HardwareAddr)
+
+	for _, value := range conf.Speakers {
+		filteredSpeakers[value] = true
+		log.Debugf("Reacting only speakers %v\n", value)
+	}
+
+	return i, filteredSpeakers, nil
+}
+
+func checkInMap(deviceID string, list magicspeaker.MagicSpeakers) bool {
+	for _, ms := range list {
+		if ms.Speaker.DeviceInfo.DeviceID == deviceID {
 			return true
 		}
 	}
