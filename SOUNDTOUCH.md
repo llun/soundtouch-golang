@@ -1,5 +1,5 @@
+## NowPlaying Status
 
-## NowPlaying Status.
 
 ```golang
 const (

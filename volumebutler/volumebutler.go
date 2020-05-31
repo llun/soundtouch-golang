@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+
 	"github.com/jpillora/opts"
 	scribble "github.com/nanobox-io/golang-scribble"
 	log "github.com/sirupsen/logrus"
@@ -22,6 +23,7 @@ var VERSION = "0.0" + version + "-src"
 const shortUsage = "Auto adjust volumes for special media on specific Soundtouch speakers."
 
 type config struct {
+
 	Speakers            []string  `opts:"group=Soundtouch" help:"Speakers to listen for, all if not set"`
 	Interface           string    `opts:"group=Soundtouch" help:"network interface to listen"`
 	NoSoundtouchSystems int       `opts:"group=Soundtouch" help:"Number of Soundtouch systems to scan for."`
@@ -51,7 +53,6 @@ func main() {
 	log.SetLevel(conf.LogLevel)
 
 	iff, filteredSpeakers, scribbleDb, _ := processConfig(conf)
-
 	var wg sync.WaitGroup
 	log.Infof("Scanning for Soundtouch systems.")
 	for ok := true; ok; ok = (len(visibleSpeakers) < conf.NoSoundtouchSystems) {
@@ -117,6 +118,7 @@ func processConfig(conf config) (*net.Interface, speakerMap, *scribble.Driver, e
 	for _, value := range conf.Speakers {
 		filteredSpeakers[value] = true
 		log.Debugf("Reacting only speakers %v\n", value)
+
 	}
 
 	db, _ := scribble.New(conf.Filename, nil)
@@ -136,3 +138,4 @@ func checkInMap(deviceID string, list magicspeaker.MagicSpeakers) bool {
 	}
 	return false
 }
+

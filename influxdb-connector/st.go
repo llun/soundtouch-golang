@@ -12,6 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	soundtouch "github.com/theovassiliou/soundtouch-golang"
+
 	"github.com/theovassiliou/soundtouch-golang/magiczone/magicspeaker"
 )
 
@@ -79,7 +80,7 @@ func main() {
 	var wg sync.WaitGroup
 	log.Infof("Scanning for Soundtouch systems.")
 	messageCh := make(chan *soundtouch.Update)
-
+  
 	for ok := true; ok; ok = (len(visibleSpeakers) < conf.NoSoundtouchSystems) {
 		speakerCh := soundtouch.Lookup(iff)
 
@@ -152,6 +153,7 @@ func isIn(name string, selected []string) bool {
 	}
 	return false
 }
+
 
 // Will create the interface, and the speakerMap
 func processConfig(conf config) (*net.Interface, speakerMap, error) {

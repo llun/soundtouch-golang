@@ -123,6 +123,7 @@ func (s *Speaker) GetData(action string) ([]byte, error) {
 	actionURL := s.BaseHTTPURL
 	actionURL.Path = action
 
+
 	mLogger := log.WithFields(log.Fields{
 		"Speaker": s.DeviceInfo.Name,
 		"ID":      s.DeviceInfo.DeviceID,
@@ -154,6 +155,7 @@ func (s *Speaker) SetData(action string, input []byte) ([]byte, error) {
 	})
 
 	mLogger.Tracef("POST: %s, %v\n", actionURL.String(), buffer)
+
 	resp, err := http.Post(actionURL.String(), "application/xml", buffer)
 	if err != nil {
 		return nil, err
