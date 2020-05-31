@@ -40,6 +40,12 @@ const (
 	IHeart             = "IHEART"
 )
 
+// All StreamTypes
+const (
+	RadioStreaming = "RADIO_STREAMING"
+	TrackOnDemand  = "TRACK_ONDEMAND"
+)
+
 // NowPlaying defines the now_playing message to/from soundtouch system
 type NowPlaying struct {
 	PlayStatus    PlayStatus  `xml:"playStatus"`

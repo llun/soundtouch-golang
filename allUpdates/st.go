@@ -28,9 +28,10 @@ var influxDB = soundtouch.InfluxDB{
 }
 
 type config struct {
-	Speakers  []string  `opts:"group=Soundtouch" help:"Speakers to listen for, all if not set"`
-	Interface string    `opts:"group=Soundtouch" help:"network interface to listen"`
-	LogLevel  log.Level `help:"Log level, one of panic, fatal, error, warn or warning, info, debug, trace"`
+	Speakers       []string  `opts:"group=Soundtouch" help:"Speakers to listen for, all if not set"`
+	IgnoreMessages []string  `opts:"group=Soundtouch" help:"MessageTypes to ignore"`
+	Interface      string    `opts:"group=Soundtouch" help:"network interface to listen"`
+	LogLevel       log.Level `help:"Log level, one of panic, fatal, error, warn or warning, info, debug, trace"`
 }
 
 func main() {
@@ -86,6 +87,9 @@ func main() {
 
 	}
 	for m := range messageCh {
+		if len(conf.IgnoreMessages) > 0 && isIn(reflect.TypeOf(m.Value).Name(), conf.IgnoreMessages) {
+			continue
+		}
 		mLogger := log.WithFields(log.Fields{
 			"Speaker": influxDB.SoundtouchNetwork[m.DeviceID],
 			"Value":   reflect.TypeOf(m.Value).Name(),

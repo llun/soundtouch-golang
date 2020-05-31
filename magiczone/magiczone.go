@@ -5,13 +5,11 @@ import (
 	"sync"
 	"time"
 
-
 	"github.com/jpillora/opts"
-	scribble "github.com/nanobox-io/golang-scribble"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/theovassiliou/soundtouch-golang"
-	"github.com/theovassiliou/soundtouch-golang/volumebutler/magicspeaker"
+	"github.com/theovassiliou/soundtouch-golang/magiczone/magicspeaker"
 )
 
 //set this via ldflags (see https://stackoverflow.com/q/11354518)
@@ -23,12 +21,10 @@ var VERSION = "0.0" + version + "-src"
 const shortUsage = "Auto adjust volumes for special media on specific Soundtouch speakers."
 
 type config struct {
-
 	Speakers            []string  `opts:"group=Soundtouch" help:"Speakers to listen for, all if not set"`
 	Interface           string    `opts:"group=Soundtouch" help:"network interface to listen"`
 	NoSoundtouchSystems int       `opts:"group=Soundtouch" help:"Number of Soundtouch systems to scan for."`
 	LogLevel            log.Level `help:"Log level, one of panic, fatal, error, warn or warning, info, debug, trace"`
-	Filename            string    `opts:"group=VolumeButler" help:"Where to store the data"`
 }
 type speakerMap map[string]bool
 
@@ -40,7 +36,6 @@ func main() {
 		NoSoundtouchSystems: -1,
 		LogLevel:            log.DebugLevel,
 		Interface:           "en0",
-		Filename:            "./Volumes.db",
 	}
 
 	//parse config
@@ -52,18 +47,17 @@ func main() {
 
 	log.SetLevel(conf.LogLevel)
 
-	iff, filteredSpeakers, scribbleDb, _ := processConfig(conf)
+	iff, filteredSpeakers, _ := processConfig(conf)
+
 	var wg sync.WaitGroup
 	log.Infof("Scanning for Soundtouch systems.")
 	for ok := true; ok; ok = (len(visibleSpeakers) < conf.NoSoundtouchSystems) {
-
 		speakerCh := soundtouch.Lookup(iff)
 		messageCh := make(chan *soundtouch.Update)
 
 		for speaker := range speakerCh {
 			speakerInfo, _ := speaker.Info()
 			speaker.DeviceInfo = speakerInfo
-
 			spkLogger := log.WithFields(log.Fields{
 				"Speaker": speaker.DeviceInfo.Name,
 				"ID":      speaker.DeviceInfo.DeviceID,
@@ -85,18 +79,18 @@ func main() {
 			visibleSpeakers[speaker.DeviceInfo.DeviceID] = ms
 			spkLogger.Infof("Listening\n")
 			spkLogger.Debugf(" with IP: %v", speaker.IP)
+			soundtouch.DumpZones(spkLogger, *speaker)
 			wg.Add(1)
 
 			go func(s *soundtouch.Speaker, msgChan chan *soundtouch.Update) {
 				defer wg.Done()
 				webSocketCh, _ := s.Listen()
 				magicSpeaker := magicspeaker.New(s)
-				magicSpeaker.ScribbleDb = scribbleDb
 				magicSpeaker.WebSocketCh = webSocketCh
 				magicSpeaker.SpeakerName = visibleSpeakers[ms.DeviceInfo.DeviceID].DeviceInfo.Name
+				magicSpeaker.KnownSpeakers = &visibleSpeakers
 				magicSpeaker.MessageLoop()
 			}(speaker, messageCh)
-
 		}
 		time.Sleep(10 * time.Second)
 	}
@@ -104,9 +98,10 @@ func main() {
 	wg.Wait()
 }
 
-// Will create the interface, the speakerMap, and the scribble database
-func processConfig(conf config) (*net.Interface, speakerMap, *scribble.Driver, error) {
+// Will create the interface, and the speakerMap
+func processConfig(conf config) (*net.Interface, speakerMap, error) {
 	filteredSpeakers := make(speakerMap)
+
 	i, err := net.InterfaceByName(conf.Interface)
 
 	if err != nil {
@@ -118,16 +113,9 @@ func processConfig(conf config) (*net.Interface, speakerMap, *scribble.Driver, e
 	for _, value := range conf.Speakers {
 		filteredSpeakers[value] = true
 		log.Debugf("Reacting only speakers %v\n", value)
-
 	}
 
-	db, _ := scribble.New(conf.Filename, nil)
-	if err != nil {
-		log.Fatalf("Error with database. %s", err)
-	}
-
-	log.Debugf("Created database: %v\n", db)
-	return i, filteredSpeakers, db, nil
+	return i, filteredSpeakers, nil
 }
 
 func checkInMap(deviceID string, list magicspeaker.MagicSpeakers) bool {
@@ -138,4 +126,3 @@ func checkInMap(deviceID string, list magicspeaker.MagicSpeakers) bool {
 	}
 	return false
 }
-
