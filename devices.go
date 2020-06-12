@@ -15,7 +15,7 @@ var visibleSpeakers = make(speakers)
 var filteredSpeakers speakerMap
 
 // NetworkConfig describes the soundtouch network
-// InterfaceName as the network interface to listen
+// InterfaceName as the network interface to listen, e.g. "en0"
 // NoOfSystems is the number of expected systems. Searching for at least this amount of systems
 // SpeakerToListenFor contains the defined list of speakers we are handling
 // UpdateHandlers the list of handlers of handlers to be used.
@@ -23,7 +23,7 @@ type NetworkConfig struct {
 	InterfaceName      string
 	NoOfSystems        int
 	SpeakerToListenFor []string
-	UpdateHandlers     []UpdateHandlerConfig
+	UpdateHandlers     []PluginConfig
 }
 
 // GetDevices starts listening on the indicated interface for the speakers to listen for.
@@ -75,7 +75,6 @@ func getDevices(conf NetworkConfig, closeChannel bool) (speakers chan *Speaker) 
 	}
 	speakers = make(chan *Speaker)
 
-	// var wg sync.WaitGroup
 	log.Debugf("Scanning for Soundtouch systems.")
 	go func() {
 		for ok := true; ok; ok = (len(visibleSpeakers) < conf.NoOfSystems) {
@@ -98,7 +97,6 @@ func getDevices(conf NetworkConfig, closeChannel bool) (speakers chan *Speaker) 
 
 				// check whether we might have to ignore the speaker
 				if len(filteredSpeakers) > 0 && !(filteredSpeakers)[speakerInfo.Name] {
-					// spkLogger.Traceln("Seen but ignoring messages from: ", speakerInfo.Name)
 					continue
 				}
 
@@ -107,7 +105,7 @@ func getDevices(conf NetworkConfig, closeChannel bool) (speakers chan *Speaker) 
 				// register handles
 				for _, uh := range conf.UpdateHandlers {
 					if (len(uh.Speakers) == 0) || (isIn(uh.Speakers, speaker.Name())) {
-						speaker.AddUpdateHandler(uh)
+						speaker.AddPlugin(uh)
 					}
 				}
 
@@ -115,7 +113,7 @@ func getDevices(conf NetworkConfig, closeChannel bool) (speakers chan *Speaker) 
 					// defer wg.Done()
 					webSocketCh, _ := s.Listen()
 					s.webSocketCh = webSocketCh
-					s.Handle(webSocketCh)
+					s.Execute(webSocketCh)
 				}(speaker, messageCh)
 
 				speakers <- speaker

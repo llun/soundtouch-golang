@@ -47,11 +47,11 @@ func main() {
 		InterfaceName:      conf.Interface,
 		NoOfSystems:        conf.NoSoundtouchSystems,
 		SpeakerToListenFor: conf.Speakers,
-		UpdateHandlers: []soundtouch.UpdateHandlerConfig{
+		UpdateHandlers: []soundtouch.PluginConfig{
 			{
-				Name:          "",
-				UpdateHandler: soundtouch.UpdateHandlerFunc(basicHandler),
-				Terminate:     false,
+				Name:      "",
+				Plugin:    soundtouch.PluginFunc(basicHandler),
+				Terminate: false,
 			},
 		},
 	}

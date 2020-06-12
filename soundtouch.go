@@ -26,7 +26,7 @@ type Speaker struct {
 	DeviceInfo     Info
 	conn           *websocket.Conn
 	webSocketCh    chan *Update
-	UpdateHandlers []UpdateHandlerConfig
+	UpdateHandlers []PluginConfig
 }
 
 // Lookup listens via mdns for soundtouch speakers and returns Speaker channel
@@ -70,10 +70,10 @@ func NewSpeaker(entry *mdns.ServiceEntry) *Speaker {
 		Info{},
 		nil,
 		nil,
-		[]UpdateHandlerConfig{
+		[]PluginConfig{
 			{
 				Name: "NotConfigured",
-				UpdateHandler: UpdateHandlerFunc(func(hndlName string, update Update, speaker Speaker) {
+				Plugin: PluginFunc(func(hndlName string, update Update, speaker Speaker) {
 					log.Infof("UpdateHandler not configured.")
 				}),
 				Terminate: false,

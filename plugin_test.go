@@ -20,7 +20,7 @@ func TestSpeaker_RemoveUpdateHandler(t *testing.T) {
 		DeviceInfo     Info
 		conn           *websocket.Conn
 		webSocketCh    chan *Update
-		UpdateHandlers []UpdateHandlerConfig
+		UpdateHandlers []PluginConfig
 	}
 	type args struct {
 		name string
@@ -33,10 +33,10 @@ func TestSpeaker_RemoveUpdateHandler(t *testing.T) {
 		{
 			"Remove NotConfigured",
 			fields{
-				UpdateHandlers: []UpdateHandlerConfig{
-					UpdateHandlerConfig{
+				UpdateHandlers: []PluginConfig{
+					{
 						Name: "NotConfigured",
-						UpdateHandler: UpdateHandlerFunc(func(hndlName string, update Update, speaker Speaker) {
+						Plugin: PluginFunc(func(pluginName string, update Update, speaker Speaker) {
 							log.Infof("UpdateHandler not configured.")
 						}),
 						Terminate: false,
@@ -48,7 +48,7 @@ func TestSpeaker_RemoveUpdateHandler(t *testing.T) {
 		{
 			"No Handler",
 			fields{
-				UpdateHandlers: []UpdateHandlerConfig{},
+				UpdateHandlers: []PluginConfig{},
 			},
 			args{name: ""},
 		},
@@ -65,8 +65,8 @@ func TestSpeaker_RemoveUpdateHandler(t *testing.T) {
 				webSocketCh:    tt.fields.webSocketCh,
 				UpdateHandlers: tt.fields.UpdateHandlers,
 			}
-			s.RemoveUpdateHandler(tt.args.name)
-			if s.HasUpdateHandler(tt.args.name) {
+			s.RemovePlugin(tt.args.name)
+			if s.HasPlugin(tt.args.name) {
 				t.Errorf("Speaker.RemoveUpdateHandler failed. %v still included", tt.args.name)
 			}
 		})
@@ -75,24 +75,24 @@ func TestSpeaker_RemoveUpdateHandler(t *testing.T) {
 
 func TestSpeaker_AddUpdateHandler(t *testing.T) {
 	type fields struct {
-		IP             net.IP
-		Port           int
-		BaseHTTPURL    url.URL
-		WebSocketURL   url.URL
-		DeviceInfo     Info
-		conn           *websocket.Conn
-		webSocketCh    chan *Update
-		UpdateHandlers []UpdateHandlerConfig
+		IP           net.IP
+		Port         int
+		BaseHTTPURL  url.URL
+		WebSocketURL url.URL
+		DeviceInfo   Info
+		conn         *websocket.Conn
+		webSocketCh  chan *Update
+		Plugins      []PluginConfig
 	}
 	type args struct {
-		uhc UpdateHandlerConfig
+		uhc PluginConfig
 	}
 
 	f1 := fields{
-		UpdateHandlers: []UpdateHandlerConfig{
+		Plugins: []PluginConfig{
 			{
 				Name: "UpdateHandlerConfig1",
-				UpdateHandler: UpdateHandlerFunc(func(hndlName string, update Update, speaker Speaker) {
+				Plugin: PluginFunc(func(pluginName string, update Update, speaker Speaker) {
 					log.Infof("UpdateHandler not configured.")
 				}),
 				Terminate: false,
@@ -101,17 +101,17 @@ func TestSpeaker_AddUpdateHandler(t *testing.T) {
 	}
 
 	f2 := fields{
-		UpdateHandlers: []UpdateHandlerConfig{
+		Plugins: []PluginConfig{
 			{
 				Name: "UpdateHandlerConfig1",
-				UpdateHandler: UpdateHandlerFunc(func(hndlName string, update Update, speaker Speaker) {
+				Plugin: PluginFunc(func(pluginName string, update Update, speaker Speaker) {
 					log.Infof("UpdateHandler not configured.")
 				}),
 				Terminate: false,
 			},
 			{
 				Name: "UpdateHandlerConfig2",
-				UpdateHandler: UpdateHandlerFunc(func(hndlName string, update Update, speaker Speaker) {
+				Plugin: PluginFunc(func(pluginName string, update Update, speaker Speaker) {
 					log.Infof("UpdateHandler not configured.")
 				}),
 				Terminate: false,
@@ -120,19 +120,19 @@ func TestSpeaker_AddUpdateHandler(t *testing.T) {
 	}
 
 	fDefault := fields{
-		UpdateHandlers: []UpdateHandlerConfig{
+		Plugins: []PluginConfig{
 			{
 				Name: "NotConfigured",
-				UpdateHandler: UpdateHandlerFunc(func(hndlName string, update Update, speaker Speaker) {
+				Plugin: PluginFunc(func(pluginName string, update Update, speaker Speaker) {
 					log.Infof("UpdateHandler not configured.")
 				}),
 				Terminate: false,
 			},
 		},
 	}
-	uhc1 := UpdateHandlerConfig{
+	uhc1 := PluginConfig{
 		Name: "NewUpdateHandler",
-		UpdateHandler: UpdateHandlerFunc(func(hndlName string, update Update, speaker Speaker) {
+		Plugin: PluginFunc(func(pluginName string, update Update, speaker Speaker) {
 			log.Infof("UpdateHandler not configured.")
 		}),
 		Terminate: false,
@@ -158,7 +158,7 @@ func TestSpeaker_AddUpdateHandler(t *testing.T) {
 		{
 			"Add 1 to empty",
 			fields{
-				UpdateHandlers: []UpdateHandlerConfig{},
+				Plugins: []PluginConfig{},
 			},
 			args{uhc1},
 			1,
@@ -180,13 +180,13 @@ func TestSpeaker_AddUpdateHandler(t *testing.T) {
 				DeviceInfo:     tt.fields.DeviceInfo,
 				conn:           tt.fields.conn,
 				webSocketCh:    tt.fields.webSocketCh,
-				UpdateHandlers: tt.fields.UpdateHandlers,
+				UpdateHandlers: tt.fields.Plugins,
 			}
-			s.AddUpdateHandler(tt.args.uhc)
+			s.AddPlugin(tt.args.uhc)
 			if len(s.UpdateHandlers) != tt.lenAfter {
 				t.Errorf("Speaker.AddUpdateHandler %v failed. length want %d is %v ", tt.name, tt.lenAfter, len(s.UpdateHandlers))
 			}
-			if !s.HasUpdateHandler(tt.args.uhc.Name) {
+			if !s.HasPlugin(tt.args.uhc.Name) {
 				t.Errorf("Speaker.AddUpdateHandler %v failed. %v not included.", tt.name, tt.args.uhc.Name)
 			}
 		})
@@ -194,15 +194,6 @@ func TestSpeaker_AddUpdateHandler(t *testing.T) {
 }
 
 func TestNewSpeaker(t *testing.T) {
-	entriesCh := make(chan *mdns.ServiceEntry, 7)
-
-	params := mdns.DefaultParams("_soundtouch._tcp")
-	params.Entries = entriesCh
-	params.Interface, _ = net.InterfaceByName("en0")
-
-	mdns.Query(params)
-	var entry *mdns.ServiceEntry
-	entry = <-entriesCh
 
 	type args struct {
 		entry *mdns.ServiceEntry
@@ -212,48 +203,9 @@ func TestNewSpeaker(t *testing.T) {
 		args args
 		want *Speaker
 	}{
+
 		{
-			"New empty ServiceEntry",
-			args{entry},
-			&Speaker{
-				IP:   nil,
-				Port: 0,
-				BaseHTTPURL: url.URL{
-					Scheme:     "",
-					Opaque:     "",
-					User:       &url.Userinfo{},
-					Host:       "",
-					Path:       "",
-					RawPath:    "",
-					ForceQuery: false,
-					RawQuery:   "",
-					Fragment:   "",
-				},
-				WebSocketURL: url.URL{
-					Scheme:     "",
-					Opaque:     "",
-					User:       &url.Userinfo{},
-					Host:       "",
-					Path:       "",
-					RawPath:    "",
-					ForceQuery: false,
-					RawQuery:   "",
-					Fragment:   "",
-				},
-				DeviceInfo: Info{
-					DeviceID:  "",
-					Name:      "",
-					Type:      "",
-					IPAddress: nil,
-					Raw:       nil,
-				},
-				conn:           &websocket.Conn{},
-				webSocketCh:    make(chan *Update),
-				UpdateHandlers: nil,
-			},
-		},
-		{
-			"New empty ServiceEntry",
+			"New nil ServiceEntry",
 			args{nil},
 			&Speaker{},
 		},

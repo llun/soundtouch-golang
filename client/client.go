@@ -46,11 +46,11 @@ func main() {
 	nConf := soundtouch.NetworkConfig{
 		InterfaceName: conf.Interface,
 		NoOfSystems:   conf.NoSoundtouchSystems,
-		UpdateHandlers: []soundtouch.UpdateHandlerConfig{
+		UpdateHandlers: []soundtouch.PluginConfig{
 			{
-				Name:          "",
-				UpdateHandler: soundtouch.UpdateHandlerFunc(basicHandler),
-				Terminate:     false,
+				Name:      "",
+				Plugin:    soundtouch.PluginFunc(basicHandler),
+				Terminate: false,
 			},
 		},
 	}

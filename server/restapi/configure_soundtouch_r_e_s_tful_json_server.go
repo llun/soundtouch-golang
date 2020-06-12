@@ -93,17 +93,17 @@ func configureAPI(api *operations.SoundtouchRESTfulJSONServerAPI) http.Handler {
 	nConf := sndt.NetworkConfig{
 		InterfaceName: soundtouchFlags.Interface,
 		NoOfSystems:   soundtouchFlags.NoSoundtouchSystems,
-		UpdateHandlers: []sndt.UpdateHandlerConfig{
+		UpdateHandlers: []sndt.PluginConfig{
 			{
-				Name:          "BASIC-HANDLER",
-				UpdateHandler: sndt.UpdateHandlerFunc(basicHandler),
-				Terminate:     false,
+				Name:      "BASIC-HANDLER",
+				Plugin:    sndt.PluginFunc(basicHandler),
+				Terminate: false,
 			},
 			{
-				Name:          "CONNECTION-HANDLER",
-				Speakers:      []string{"Office"},
-				UpdateHandler: sndt.UpdateHandlerFunc(connectionHandler),
-				Terminate:     false,
+				Name:      "CONNECTION-HANDLER",
+				Speakers:  []string{"Office"},
+				Plugin:    sndt.PluginFunc(connectionHandler),
+				Terminate: false,
 			},
 		},
 	}

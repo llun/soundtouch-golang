@@ -80,3 +80,55 @@ func Test_contains(t *testing.T) {
 		})
 	}
 }
+
+func Test_isIn(t *testing.T) {
+	type args struct {
+		list     []string
+		deviceID string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			"Contains",
+			args{
+				[]string{"A", "B", "C"},
+				"A",
+			},
+			true,
+		},
+		{
+			"Doesn't Contains",
+			args{
+				[]string{"A", "B", "C"},
+				"X",
+			},
+			false,
+		},
+		{
+			"Search in Empty",
+			args{
+				[]string{},
+				"A",
+			},
+			false,
+		},
+		{
+			"Search in Empty",
+			args{
+				nil,
+				"A",
+			},
+			false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := isIn(tt.args.list, tt.args.deviceID); got != tt.want {
+				t.Errorf("isIn() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
