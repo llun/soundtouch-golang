@@ -118,11 +118,11 @@ func (z *Zone) AddSlave(s Speaker) {
 func NewZone(master, slave Speaker) MultiRoomZone {
 	z := MultiRoomZone{
 		Members: []Member{
-			Member{
+			{
 				master.IP.String(),
 				master.DeviceInfo.DeviceID,
 			},
-			Member{
+			{
 				slave.IP.String(),
 				slave.DeviceInfo.DeviceID,
 			},
