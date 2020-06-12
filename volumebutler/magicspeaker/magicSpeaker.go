@@ -42,6 +42,7 @@ func (m *MagicSpeaker) ReadDB(album string, currentAlbum *DbEntry) *DbEntry {
 func (m *MagicSpeaker) WriteDB(album string, storedAlbum *DbEntry) {
 	storedAlbum.LastUpdated = time.Now()
 	m.ScribbleDb.Write(m.SpeakerName, album, &storedAlbum)
+	m.ScribbleDb.Write("All", album, &storedAlbum)
 }
 
 func (m *MagicSpeaker) ReadAlbumDB(album string, updateMsg MagicUpdate) *DbEntry {

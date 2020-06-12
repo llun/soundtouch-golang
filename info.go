@@ -9,11 +9,14 @@ import (
 
 //Info defines the Info command for the soundtouch system
 type Info struct {
-	DeviceID string `xml:"deviceID,attr"`
-	Name     string `xml:"name"`
-	Type     string `xml:"type"`
-	Raw      []byte
+	DeviceID  string   `xml:"deviceID,attr"`
+	Name      string   `xml:"name"`
+	Type      string   `xml:"type"`
+	IPAddress []string `xml:"networkInfo>ipAddress"`
+	Raw       []byte
 }
+
+type IPAddress string
 
 // Info retrieves speaker information
 func (s *Speaker) Info() (Info, error) {

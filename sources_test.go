@@ -54,42 +54,42 @@ func TestSpeaker_Sources(t *testing.T) {
 			want: Sources{
 				DeviceID: "08DF1F1A065C",
 				SourceItems: []SourceItem{
-					SourceItem{
+					{
 						Source:        "STORED_MUSIC",
 						SourceAccount: "55076f6e-6b79-1d65-a471-00089bea8bd7/0",
 						Status:        "READY",
 						Local:         false,
 						Value:         "TwonkyServer [maxi]",
 					},
-					SourceItem{
+					{
 						Source:        "AIRPLAY",
 						SourceAccount: "",
 						Status:        "READY",
 						Local:         false,
 						Value:         "",
 					},
-					SourceItem{
+					{
 						Source:        "AMAZON",
 						SourceAccount: "nicky.pohl@googlemail.com",
 						Status:        "READY",
 						Local:         false,
 						Value:         "nicky.pohl@googlemail.com",
 					},
-					SourceItem{
+					{
 						Source:        "NOTIFICATION",
 						SourceAccount: "",
 						Status:        "UNAVAILABLE",
 						Local:         false,
 						Value:         "",
 					},
-					SourceItem{
+					{
 						Source:        "STORED_MUSIC_MEDIA_RENDERER",
 						SourceAccount: "StoredMusicUserName",
 						Status:        "UNAVAILABLE",
 						Local:         false,
 						Value:         "StoredMusicUserName",
 					},
-					SourceItem{
+					{
 						Source:        "QPLAY",
 						SourceAccount: "QPlay1UserName",
 						Status:        "UNAVAILABLE",

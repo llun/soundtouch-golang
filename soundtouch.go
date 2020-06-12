@@ -19,12 +19,14 @@ const messageBufferSize int = 256
 
 // Speaker defines a soundtouch speaker
 type Speaker struct {
-	IP           net.IP
-	Port         int
-	BaseHTTPURL  url.URL
-	WebSocketURL url.URL
-	DeviceInfo   Info
-	conn         *websocket.Conn
+	IP             net.IP
+	Port           int
+	BaseHTTPURL    url.URL
+	WebSocketURL   url.URL
+	DeviceInfo     Info
+	conn           *websocket.Conn
+	webSocketCh    chan *Update
+	UpdateHandlers []UpdateHandlerConfig
 }
 
 // Lookup listens via mdns for soundtouch speakers and returns Speaker channel
@@ -50,6 +52,10 @@ func Lookup(iface *net.Interface) <-chan *Speaker {
 
 // NewSpeaker returns a new Speaker entity based on a mdns service entry
 func NewSpeaker(entry *mdns.ServiceEntry) *Speaker {
+	if entry == nil {
+		return &Speaker{}
+	}
+
 	return &Speaker{
 		entry.AddrV4,
 		entry.Port,
@@ -63,6 +69,16 @@ func NewSpeaker(entry *mdns.ServiceEntry) *Speaker {
 		},
 		Info{},
 		nil,
+		nil,
+		[]UpdateHandlerConfig{
+			{
+				Name: "NotConfigured",
+				UpdateHandler: UpdateHandlerFunc(func(hndlName string, update Update, speaker Speaker) {
+					log.Infof("UpdateHandler not configured.")
+				}),
+				Terminate: false,
+			},
+		},
 	}
 }
 
@@ -98,10 +114,10 @@ func (s *Speaker) Listen() (chan *Update, error) {
 
 			update, err := NewUpdate(body)
 			if err != nil {
-				mLogger.Debugf("Message: unkown")
+				mLogger.Tracef("Message: unkown")
 				mLogger.Tracef(err.Error())
 			} else {
-				mLogger.Debugf("Message: %v", update)
+				mLogger.Tracef("Message: %v", update)
 			}
 			if update != nil {
 				messageCh <- update
@@ -122,7 +138,6 @@ func (s *Speaker) Close() error {
 func (s *Speaker) GetData(action string) ([]byte, error) {
 	actionURL := s.BaseHTTPURL
 	actionURL.Path = action
-
 
 	mLogger := log.WithFields(log.Fields{
 		"Speaker": s.DeviceInfo.Name,
@@ -166,4 +181,14 @@ func (s *Speaker) SetData(action string, input []byte) ([]byte, error) {
 		return nil, err
 	}
 	return body, nil
+}
+
+// Name returns the speakers name as indicated in the info message, or "" if name unknwon
+func (s *Speaker) Name() (name string) {
+	return s.DeviceInfo.Name
+}
+
+// DeviceID returns the speakers DeviceID as indicated in the info message, or "" if name unknwon
+func (s *Speaker) DeviceID() (name string) {
+	return s.DeviceInfo.DeviceID
 }

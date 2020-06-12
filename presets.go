@@ -14,7 +14,7 @@ type Preset struct {
 type Presets struct {
 	DeviceID string   `xml:"deviceID,attr"`
 	Presets  []Preset `xml:"preset"`
-	Raw      []byte
+	Raw      []byte   `json:"-"`
 }
 
 // Presets queries the presets of a soundtouch system

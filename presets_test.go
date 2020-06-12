@@ -54,7 +54,7 @@ func TestSpeaker_Presets(t *testing.T) {
 			want: Presets{
 				DeviceID: "",
 				Presets: []Preset{
-					Preset{
+					{
 						ID: 1,
 						Content: ContentItem{
 							Source:       "LOCAL_INTERNET_RADIO",
@@ -64,7 +64,7 @@ func TestSpeaker_Presets(t *testing.T) {
 							IsPresetable: true,
 						},
 					},
-					Preset{
+					{
 						ID: 2,
 						Content: ContentItem{
 							Source:       "AMAZON",
@@ -74,7 +74,7 @@ func TestSpeaker_Presets(t *testing.T) {
 							IsPresetable: true,
 						},
 					},
-					Preset{
+					{
 						ID: 3,
 						Content: ContentItem{
 							Source:       "TUNEIN",
@@ -84,7 +84,7 @@ func TestSpeaker_Presets(t *testing.T) {
 							IsPresetable: true,
 						},
 					},
-					Preset{
+					{
 						ID: 4,
 						Content: ContentItem{
 							Source:       "STORED_MUSIC",
@@ -95,7 +95,7 @@ func TestSpeaker_Presets(t *testing.T) {
 						},
 					},
 
-					Preset{
+					{
 						ID: 5,
 						Content: ContentItem{
 							Source:       "STORED_MUSIC",
@@ -105,7 +105,7 @@ func TestSpeaker_Presets(t *testing.T) {
 							IsPresetable: true,
 						},
 					},
-					Preset{
+					{
 						ID: 6,
 						Content: ContentItem{
 							Source:       "AMAZON",
