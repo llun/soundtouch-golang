@@ -19,6 +19,7 @@ import (
 
 	xj "github.com/basgys/goxml2json"
 
+	"github.com/theovassiliou/soundtouch-golang/plugins/logger"
 	"github.com/theovassiliou/soundtouch-golang/server/models"
 	"github.com/theovassiliou/soundtouch-golang/server/restapi/operations"
 	apiops "github.com/theovassiliou/soundtouch-golang/server/restapi/operations/api"
@@ -46,10 +47,11 @@ type speakers map[string]*RestSpeaker
 var visibleSpeakers = make(speakers)
 
 type config struct {
-	Interface           string   `short:"i" long:"interface" description:"network interface to listen"`
-	NoSoundtouchSystems int      `short:"n" long:"noSystems" description:"Number of Soundtouch systems to scan for."`
-	Speakers            []string `short:"s" long:"speakers" description:"Speakers to listen for, all if not set"`
-	LogLevel            string   `short:"l" long:"log-level" default:"debug" description:"Log level, one of panic, fatal, error, warn or warning, info, debug, trace"`
+	Interface           string        `short:"i" long:"interface" description:"network interface to listen"`
+	NoSoundtouchSystems int           `short:"n" long:"noSystems" description:"Number of Soundtouch systems to scan for."`
+	Speakers            []string      `short:"s" long:"speakers" description:"Speakers to listen for, all if not set"`
+	LogLevel            string        `short:"l" long:"log-level" default:"debug" description:"Log level, one of panic, fatal, error, warn or warning, info, debug, trace"`
+	Logger              logger.Config `toml:"logger"`
 }
 
 var soundtouchFlags = config{}
@@ -93,18 +95,8 @@ func configureAPI(api *operations.SoundtouchRESTfulJSONServerAPI) http.Handler {
 	nConf := sndt.NetworkConfig{
 		InterfaceName: soundtouchFlags.Interface,
 		NoOfSystems:   soundtouchFlags.NoSoundtouchSystems,
-		UpdateHandlers: []sndt.PluginConfig{
-			{
-				Name:      "BASIC-HANDLER",
-				Plugin:    sndt.PluginFunc(basicHandler),
-				Terminate: false,
-			},
-			{
-				Name:      "CONNECTION-HANDLER",
-				Speakers:  []string{"Office"},
-				Plugin:    sndt.PluginFunc(connectionHandler),
-				Terminate: false,
-			},
+		Plugins: []sndt.Plugin{
+			logger.NewLogger(soundtouchFlags.Logger),
 		},
 	}
 

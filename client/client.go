@@ -2,11 +2,13 @@ package main
 
 import (
 	"reflect"
+	"time"
 
 	"github.com/jpillora/opts"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/theovassiliou/soundtouch-golang"
+	"github.com/theovassiliou/soundtouch-golang/plugins/logger"
 )
 
 //set this via ldflags (see https://stackoverflow.com/q/11354518)
@@ -46,12 +48,8 @@ func main() {
 	nConf := soundtouch.NetworkConfig{
 		InterfaceName: conf.Interface,
 		NoOfSystems:   conf.NoSoundtouchSystems,
-		UpdateHandlers: []soundtouch.PluginConfig{
-			{
-				Name:      "",
-				Plugin:    soundtouch.PluginFunc(basicHandler),
-				Terminate: false,
-			},
+		Plugins: []soundtouch.Plugin{
+			&logger.Logger{},
 		},
 	}
 
@@ -72,12 +70,16 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("%v\n", data)
-	log.Printf("%s\n", data.Raw)
+	log.Printf("This is the raw data: %s\n", data.Raw)
 	log.Printf("The volume is: %d", data.TargetVolume)
 
 	soundtouchNetwork["Office"].SetVolume(20)
 	log.Printf("Set volume to 20")
+	time.Sleep(15 * time.Second)
+	log.Printf("Returning to volume %d", data.TargetVolume)
+
+	soundtouchNetwork["Office"].SetVolume(data.TargetVolume)
+	time.Sleep(2 * time.Second)
 
 }
 

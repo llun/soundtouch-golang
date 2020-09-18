@@ -52,11 +52,11 @@ func TestSpeaker_Sources(t *testing.T) {
 			route:        "http://192.168.178.52:8090/sources",
 			fields:       f1,
 			want: Sources{
-				DeviceID: "08DF1F1A065C",
+				DeviceID: "0122FF1A1234",
 				SourceItems: []SourceItem{
 					{
 						Source:        "STORED_MUSIC",
-						SourceAccount: "55076f6e-6b79-1d65-a471-00089bea8bd7/0",
+						SourceAccount: "44067f6f-6b79-2d88-b531-11189bea9cd7/0",
 						Status:        "READY",
 						Local:         false,
 						Value:         "TwonkyServer [maxi]",
@@ -70,10 +70,10 @@ func TestSpeaker_Sources(t *testing.T) {
 					},
 					{
 						Source:        "AMAZON",
-						SourceAccount: "nicky.pohl@googlemail.com",
+						SourceAccount: "john.doe@acme.com",
 						Status:        "READY",
 						Local:         false,
-						Value:         "nicky.pohl@googlemail.com",
+						Value:         "john.doe@acme.com",
 					},
 					{
 						Source:        "NOTIFICATION",

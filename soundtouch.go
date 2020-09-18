@@ -19,14 +19,14 @@ const messageBufferSize int = 256
 
 // Speaker defines a soundtouch speaker
 type Speaker struct {
-	IP             net.IP
-	Port           int
-	BaseHTTPURL    url.URL
-	WebSocketURL   url.URL
-	DeviceInfo     Info
-	conn           *websocket.Conn
-	webSocketCh    chan *Update
-	UpdateHandlers []PluginConfig
+	IP           net.IP
+	Port         int
+	BaseHTTPURL  url.URL
+	WebSocketURL url.URL
+	DeviceInfo   Info
+	conn         *websocket.Conn
+	webSocketCh  chan *Update
+	Plugins      []Plugin
 }
 
 // Lookup listens via mdns for soundtouch speakers and returns Speaker channel
@@ -70,15 +70,7 @@ func NewSpeaker(entry *mdns.ServiceEntry) *Speaker {
 		Info{},
 		nil,
 		nil,
-		[]PluginConfig{
-			{
-				Name: "NotConfigured",
-				Plugin: PluginFunc(func(hndlName string, update Update, speaker Speaker) {
-					log.Infof("UpdateHandler not configured.")
-				}),
-				Terminate: false,
-			},
-		},
+		nil,
 	}
 }
 

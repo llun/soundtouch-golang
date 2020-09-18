@@ -1,0 +1,17 @@
+# Example configuration as TOML file
+
+title = "Configuration example"
+
+[global]
+interface="en0"
+no_of_soundtouch_systems=7
+
+[logger]
+speakers = ["Office"]
+ignore_messages = ["ConnectionStateUpdated"]
+terminate  = false
+
+[episodeCollector]
+speakers = ["Office"]
+artists = ["Drei Fragezeichen", "Umberto Eco"]
+terminate  = false

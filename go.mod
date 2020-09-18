@@ -15,11 +15,13 @@ require (
 	github.com/go-openapi/validate v0.19.8
 	github.com/gorilla/websocket v1.4.1
 	github.com/hashicorp/mdns v1.0.3
+	github.com/influxdata/toml v0.0.0-20180607005434-2a2e3012f7cf
 	github.com/jarcoal/httpmock v1.0.4
 	github.com/jcelliott/lumber v0.0.0-20160324203708-dd349441af25 // indirect
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/jpillora/opts v1.1.2
 	github.com/nanobox-io/golang-scribble v0.0.0-20190309225732-aa3e7c118975
+	github.com/naoina/go-stringutil v0.1.0 // indirect
 	github.com/sirupsen/logrus v1.4.2
 	golang.org/x/net v0.0.0-20200226121028-0de0cce0169b
 	golang.org/x/sys v0.0.0-20191026070338-33540a1f6037 // indirect

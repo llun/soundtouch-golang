@@ -103,6 +103,47 @@ func (u Update) String() string {
 }
 
 // Is returns true in case Update message is of type msgTypeName
+// is one of
+// - ConnectionStateUpdated
+// - Volume
+// - NowPlaying
+// - Preset
 func (u Update) Is(msgTypeName string) bool {
 	return reflect.TypeOf(u.Value).Name() == msgTypeName
+}
+
+// Artist returns the artist if present, empty else
+func (u Update) Artist() string {
+	switch reflect.TypeOf(u.Value).Name() {
+	case "NowPlaying":
+		return u.Value.(NowPlaying).Artist
+	}
+	return ""
+}
+
+// Album returns the Album if present, else empty
+func (u Update) Album() string {
+	switch reflect.TypeOf(u.Value).Name() {
+	case "NowPlaying":
+		return u.Value.(NowPlaying).Album
+	}
+	return ""
+}
+
+// HasContentItem returns true if the Update message has contentItem, false else
+func (u Update) HasContentItem() bool {
+	switch reflect.TypeOf(u.Value).Name() {
+	case "NowPlaying":
+		return true
+	}
+	return false
+}
+
+// ContentItem returns the ContentItem if present, or an empty one if not present
+func (u Update) ContentItem() ContentItem {
+	if u.HasContentItem() {
+		return u.Value.(NowPlaying).Content
+	}
+	return ContentItem{}
+
 }

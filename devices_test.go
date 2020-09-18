@@ -19,9 +19,9 @@ func Test_contains(t *testing.T) {
 			Type:     "",
 			Raw:      nil,
 		},
-		conn:           &websocket.Conn{},
-		webSocketCh:    make(chan *Update),
-		UpdateHandlers: nil,
+		conn:        &websocket.Conn{},
+		webSocketCh: make(chan *Update),
+		Plugins:     nil,
 	}
 	s2 := Speaker{
 		IP:           nil,
@@ -34,9 +34,9 @@ func Test_contains(t *testing.T) {
 			Type:     "",
 			Raw:      nil,
 		},
-		conn:           &websocket.Conn{},
-		webSocketCh:    make(chan *Update),
-		UpdateHandlers: nil,
+		conn:        &websocket.Conn{},
+		webSocketCh: make(chan *Update),
+		Plugins:     nil,
 	}
 	ss := make(speakers)
 	ss["aabbccspeaker1"] = &s1

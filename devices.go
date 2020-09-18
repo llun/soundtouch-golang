@@ -18,12 +18,12 @@ var filteredSpeakers speakerMap
 // InterfaceName as the network interface to listen, e.g. "en0"
 // NoOfSystems is the number of expected systems. Searching for at least this amount of systems
 // SpeakerToListenFor contains the defined list of speakers we are handling
-// UpdateHandlers the list of handlers of handlers to be used.
+// Plugins the list of handlers of handlers to be used.
 type NetworkConfig struct {
 	InterfaceName      string
 	NoOfSystems        int
 	SpeakerToListenFor []string
-	UpdateHandlers     []PluginConfig
+	Plugins            []Plugin
 }
 
 // GetDevices starts listening on the indicated interface for the speakers to listen for.
@@ -103,10 +103,8 @@ func getDevices(conf NetworkConfig, closeChannel bool) (speakers chan *Speaker) 
 				visibleSpeakers[speaker.DeviceID()] = speaker
 
 				// register handles
-				for _, uh := range conf.UpdateHandlers {
-					if (len(uh.Speakers) == 0) || (isIn(uh.Speakers, speaker.Name())) {
-						speaker.AddPlugin(uh)
-					}
+				for _, uh := range conf.Plugins {
+					speaker.AddPlugin(uh)
 				}
 
 				go func(s *Speaker, msgChan chan *Update) {

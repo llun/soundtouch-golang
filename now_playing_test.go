@@ -78,8 +78,8 @@ func TestSpeaker_NowPlaying(t *testing.T) {
 			want: NowPlaying{
 				PlayStatus:    PauseState,
 				Source:        StoredMusic,
-				SourceAccount: "55076f6e-6b79-1d65-a471-00089bea8bd7/0",
-				DeviceID:      "08DF1F1A065C",
+				SourceAccount: "44067f6f-6b79-2d88-b531-11189bea9cd7/0",
+				DeviceID:      "0122FF1A1234",
 				Content: ContentItem{
 					Source:       "STORED_MUSIC",
 					Name:         "Ploutarchos 2",
@@ -224,8 +224,8 @@ func TestSpeaker_NowPlaying(t *testing.T) {
 			want: NowPlaying{
 				PlayStatus:    PlayState,
 				Source:        StoredMusic,
-				SourceAccount: "55076f6e-6b79-1d65-a471-00089bea8bd7/0",
-				DeviceID:      "08DF1F1A065C",
+				SourceAccount: "44067f6f-6b79-2d88-b531-11189bea9cd7/0",
+				DeviceID:      "0122FF1A1234",
 				Content: ContentItem{
 					Source:       "STORED_MUSIC",
 					Name:         "Platinum Edition",
