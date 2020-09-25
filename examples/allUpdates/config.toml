@@ -15,3 +15,33 @@ terminate  = false
 speakers = ["Office"]
 artists = ["Drei Fragezeichen", "Umberto Eco"]
 terminate  = false
+database = "episodes.db"
+
+[magicZone]
+## ordered list of speakers that should be grouped in zones. All if empty.
+# speakers = ["Office", "Kitchen"]
+
+## terminate indic ates whether no further plugin will be called after this plugin has been executed
+# terminate = false
+
+[influxDB]
+## speakers for which messages should be logged. If empty, all 
+# speakers = ["Office", "Kitchen"]
+
+## log_messages describes the message types to be logged
+## one or more of "ConnectionStateUpdated", "NowPlaying", "Volume"
+## all if empty
+# log_messages = ["ConnectionStateUpdated", "NowPlaying", "Volume"] 
+  
+## URL of the InfluxDB
+influxURL = "http://influxdb:8086"
+
+## Database where to store the events
+database = "soundtouch"
+#
+## dry_run indicates that the plugin dumps lineporoto for the influxDB conncetion
+## as curl statement. 
+ dry_run = true
+## 
+## terminate indicates whether no further plugin will be called after this plugin has been executed
+# terminate = true

@@ -23,9 +23,8 @@ var playStateMapping = map[PlayStatus]int{
 
 // InfluxDB configures access to the influxdb instance
 type InfluxDB struct {
-	BaseHTTPURL       url.URL
-	Database          string
-	SoundtouchNetwork map[string]string
+	BaseHTTPURL url.URL
+	Database    string
 }
 
 // SetData sends POST request to the database
@@ -72,7 +71,8 @@ func (u *Update) Lineproto(i InfluxDB, message *Update) (string, error) {
 
 func (s *ConnectionStateUpdated) lineproto(i InfluxDB, message *Update) (string, error) {
 	lineproto := fmt.Sprintf(lineProtoFmtCSU,
-		i.SoundtouchNetwork[message.DeviceID],
+		GetKnownDevices()[message.DeviceID].Name(),
+		// i.SoundtouchNetwork[message.DeviceID],
 		message.DeviceID,
 		strengthMapping[s.Signal],
 		func() string {
@@ -86,7 +86,8 @@ func (s *ConnectionStateUpdated) lineproto(i InfluxDB, message *Update) (string,
 
 func (v *Volume) lineproto(i InfluxDB, message *Update) (string, error) {
 	lineproto := fmt.Sprintf(lineProtoFmtVU,
-		i.SoundtouchNetwork[message.DeviceID],
+		GetKnownDevices()[message.DeviceID].Name(),
+		// i.SoundtouchNetwork[message.DeviceID],
 		message.DeviceID,
 		v.TargetVolume,
 	)
@@ -95,7 +96,8 @@ func (v *Volume) lineproto(i InfluxDB, message *Update) (string, error) {
 
 func (s *NowPlaying) lineproto(i InfluxDB, message *Update) (string, error) {
 	lineproto := fmt.Sprintf(lineProtoFmtNP,
-		i.SoundtouchNetwork[message.DeviceID],
+		GetKnownDevices()[message.DeviceID].Name(),
+		//	i.SoundtouchNetwork[message.DeviceID],
 		message.DeviceID,
 		func() int {
 			ps := playStateMapping[s.PlayStatus]

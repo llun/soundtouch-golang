@@ -38,13 +38,13 @@ func Test_contains(t *testing.T) {
 		webSocketCh: make(chan *Update),
 		Plugins:     nil,
 	}
-	ss := make(speakers)
+	ss := make(Speakers)
 	ss["aabbccspeaker1"] = &s1
 	ss["ccbbaaspeaker2"] = &s2
 
 	type args struct {
 		deviceID string
-		list     speakers
+		list     Speakers
 	}
 	tests := []struct {
 		name string

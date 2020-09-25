@@ -7,7 +7,7 @@
         </ContentItem>
     </preset>
     <preset id="2" createdOn="1543988691" updatedOn="1543988691">
-        <ContentItem source="AMAZON" type="tracklist" location="catalog/stations/A2XJSDTOSE5YW5/#playable" sourceAccount="nicky.pohl@googlemail.com" isPresetable="true">
+        <ContentItem source="AMAZON" type="tracklist" location="catalog/stations/A2XJSDTOSE5YW5/#playable" sourceAccount="john.doe@acme.com" isPresetable="true">
             <itemName>Deutscher Pop</itemName>
             <containerArt>https://images-na.ssl-images-amazon.com/images/G/01/Gotham/Artist_DE/DE111_0058_eudmvd_gotham_ArtTriangleTemplate_Pop-auf_deutsch._SX150_SY150_.jpg</containerArt>
         </ContentItem>
@@ -19,19 +19,19 @@
         </ContentItem>
     </preset>
     <preset id="4" createdOn="1575511378" updatedOn="1577595609">
-        <ContentItem source="STORED_MUSIC" location="0$1$18$1066$19053$20006" sourceAccount="55076f6e-6b79-1d65-a471-00089bea8bd7/0" isPresetable="true">
+        <ContentItem source="STORED_MUSIC" location="0$1$18$1066$19053$20006" sourceAccount="44067f6f-6b79-2d88-b531-11189bea9cd7/0" isPresetable="true">
             <itemName>066 Die Schattenmaenner</itemName>
             <containerArt></containerArt>
         </ContentItem>
     </preset>
     <preset id="5" createdOn="1577768420" updatedOn="1580268372">
-        <ContentItem source="STORED_MUSIC" location="0$1$17$1066$19779" sourceAccount="55076f6e-6b79-1d65-a471-00089bea8bd7/0" isPresetable="true">
+        <ContentItem source="STORED_MUSIC" location="0$1$17$1066$19779" sourceAccount="44067f6f-6b79-2d88-b531-11189bea9cd7/0" isPresetable="true">
             <itemName>059 - Giftiges Wasser</itemName>
             <containerArt></containerArt>
         </ContentItem>
     </preset>
     <preset id="6" createdOn="1578027629" updatedOn="1580533347">
-        <ContentItem source="AMAZON" type="tracklist" location="library/albums/7ec7e321-0067-4f1f-bbf0-0c90bd6e5693/#playable" sourceAccount="nicky.pohl@googlemail.com" isPresetable="true">
+        <ContentItem source="AMAZON" type="tracklist" location="library/albums/7ec7e321-0067-4f1f-bbf0-0c90bd6e5693/#playable" sourceAccount="john.doe@acme.com" isPresetable="true">
             <itemName>Songs</itemName>
             <containerArt>https://album-art-storage-eu.s3.eu-west-1.amazonaws.com/236cdd9cfc21bc8f70ad93aab8045eb7489db3b29a01b9bb9bfefe8c80a37904_256x256.jpg?response-content-type=image%2Fjpeg&amp;X-Amz-Security-Token=FwoGZXIvYXdzEIf%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaDJpYFjGq79wnVs7HsiKCAQI%2Bk2gUPZdAzj6UqAoix3fPZtGHv0FSGxxpdi4waM4pV8jTK23Vrci7wffpwXjBXbktl0U6EhvL%2BJMNcvwaoIXkKfpsEyODbxKIIjQ4iVsMZ2%2BOdqOOU8lbtt%2BKQN123C0QKCdv1WYdmWkjOocV%2BUQ7ktaYhSc3OwGZhwOHZhM8N9Yomq%2FS8QUyKGyLNnXxf%2FSBLMSgrsB9ohzdI9ZeHgNCebhjQZHQy2KSszMy6FwN6Jc%3D&amp;X-Amz-Algorithm=AWS4-HMAC-SHA256&amp;X-Amz-Date=20200201T000207Z&amp;X-Amz-SignedHeaders=host&amp;X-Amz-Expires=86399&amp;X-Amz-Credential=ASIAZZLLX6KMR4HU3U6X%2F20200201%2Feu-west-1%2Fs3%2Faws4_request&amp;X-Amz-Signature=712f3eb53bfd001cedd5b760334399099e4e6438f09bf55fbb39043ecdf3e8c5</containerArt>
         </ContentItem>

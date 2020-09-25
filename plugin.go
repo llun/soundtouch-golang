@@ -6,7 +6,7 @@ import (
 
 func (s *Speaker) AddPlugin(uhc Plugin) {
 	if !s.HasPlugin(uhc.Name()) {
-		log.Debugf("Adding handler: %v to %v", uhc.Name, s.Name())
+		log.Tracef("Adding handler: %s to %s", uhc.Name(), s.Name())
 		s.Plugins = append(s.Plugins, uhc)
 	}
 }

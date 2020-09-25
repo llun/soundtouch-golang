@@ -1,4 +1,4 @@
-package episodeCollector
+package episodecollector
 
 import (
 	"reflect"
@@ -12,6 +12,9 @@ import (
 var name = "EpisodeCollector"
 
 const sampleConfig = `
+  ## Enabling the episodeCollector plugin
+  # [episodeCollector]
+  
   ## speakers for which episodes should be stores. If empty, all 
   # speakers = ["Office", "Kitchen"]
 
@@ -21,6 +24,9 @@ const sampleConfig = `
   
   ## terminate indicates whether no further plugin will be called after this plugin has been executed
   # terminate = true
+
+  ## database contains the directory name for the episodes database
+  # database = "episode.db"
 `
 
 const description = "Collects episodes for specific artists"
@@ -45,8 +51,16 @@ func NewCollector(config Config) (d *Collector) {
 		"Plugin": name,
 	})
 
-	mLogger.Infof("Initialised\nø@")
-	mLogger.Infof("Scanning for: %v\n", d.Artists)
+	mLogger.Infof("Initialised\n")
+	mLogger.Tracef("Scanning for: %v\n", d.Artists)
+
+	db, err := scribble.New(d.Database, nil)
+	if err != nil {
+		log.Fatalf("Error with database. %s", err)
+	}
+
+	mLogger.Debugf("Initialised database: %v\n", db)
+	d.scribbleDb = db
 
 	return d
 }
@@ -56,9 +70,10 @@ func NewCollector(config Config) (d *Collector) {
 // Terminate indicates whether this is the last handler to be called
 // Artists a list of artists for which episodes should be collected
 type Config struct {
-	Speakers  []string `toml:"-"`
+	Speakers  []string `toml:"speakers"`
 	Terminate bool     `toml:"terminate"`
 	Artists   []string `toml:"artists"`
+	Database  string   `toml:"database"`
 }
 
 // Name returns the plugin name
@@ -66,7 +81,7 @@ func (d *Collector) Name() string {
 	return name
 }
 
-type DbEntry struct {
+type dbEntry struct {
 	ContentItem soundtouch.ContentItem
 	AlbumName   string
 	Volume      int
@@ -89,6 +104,7 @@ func (d *Collector) Disable() { d.suspended = true }
 // Enable temporarely the execution of the plugin
 func (d *Collector) Enable() { d.suspended = false }
 
+// Execute runs the plugin with the given parameter
 func (d *Collector) Execute(pluginName string, update soundtouch.Update, speaker soundtouch.Speaker) {
 
 	if len(d.Speakers) > 0 && !isIn(speaker.Name(), d.Speakers) {
@@ -117,8 +133,37 @@ func (d *Collector) Execute(pluginName string, update soundtouch.Update, speaker
 		return
 	}
 
-	mLogger.Infof("Found an album: %v\n", album)
+	mLogger.Infof("Found album: %v\n", album)
+	d.readAlbumDB(album, update)
+}
 
+func (d *Collector) readDB(album string, currentAlbum *dbEntry) *dbEntry {
+	if currentAlbum == nil {
+		currentAlbum = &dbEntry{}
+	}
+	d.scribbleDb.Read("All", album, &currentAlbum)
+	return currentAlbum
+}
+
+func (d *Collector) writeDB(album string, storedAlbum *dbEntry) {
+	storedAlbum.LastUpdated = time.Now()
+	d.scribbleDb.Write("All", album, &storedAlbum)
+}
+
+func (d *Collector) readAlbumDB(album string, updateMsg soundtouch.Update) *dbEntry {
+
+	storedAlbum := d.readDB(album, &dbEntry{})
+
+	if storedAlbum.AlbumName == "" {
+		// no, write this into the database
+		storedAlbum.AlbumName = album
+		// HYPO: We are in observation window, then the current volume could also
+		// be a good measurement
+		storedAlbum.DeviceID = updateMsg.DeviceID
+		storedAlbum.ContentItem = updateMsg.ContentItem()
+		d.writeDB(album, storedAlbum)
+	}
+	return storedAlbum
 }
 
 func isIn(name string, selected []string) bool {

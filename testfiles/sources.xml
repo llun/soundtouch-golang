@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<sources deviceID="08DF1F1A065C">
-    <sourceItem source="STORED_MUSIC" sourceAccount="55076f6e-6b79-1d65-a471-00089bea8bd7/0" status="READY" isLocal="false" multiroomallowed="true">TwonkyServer [maxi]</sourceItem>
+<sources deviceID="0122FF1A1234">
+    <sourceItem source="STORED_MUSIC" sourceAccount="44067f6f-6b79-2d88-b531-11189bea9cd7/0" status="READY" isLocal="false" multiroomallowed="true">TwonkyServer [maxi]</sourceItem>
     <sourceItem source="AIRPLAY" status="READY" isLocal="false" multiroomallowed="false" />
-    <sourceItem source="AMAZON" sourceAccount="nicky.pohl@googlemail.com" status="READY" isLocal="false" multiroomallowed="true">nicky.pohl@googlemail.com</sourceItem>
+    <sourceItem source="AMAZON" sourceAccount="john.doe@acme.com" status="READY" isLocal="false" multiroomallowed="true">john.doe@acme.com</sourceItem>
     <sourceItem source="NOTIFICATION" status="UNAVAILABLE" isLocal="false" multiroomallowed="true" />
     <sourceItem source="STORED_MUSIC_MEDIA_RENDERER" sourceAccount="StoredMusicUserName" status="UNAVAILABLE" isLocal="false" multiroomallowed="true">StoredMusicUserName</sourceItem>
     <sourceItem source="QPLAY" sourceAccount="QPlay1UserName" status="UNAVAILABLE" isLocal="true" multiroomallowed="true">QPlay1UserName</sourceItem>
