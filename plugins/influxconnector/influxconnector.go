@@ -86,7 +86,7 @@ type Config struct {
 	Speakers    []string `toml:"speakers"`
 	Terminate   bool     `toml:"terminate"`
 	LogMessages []string `toml:"log_messages"`
-	DryRun      bool     `toml:dry_run"`
+	DryRun      bool     `toml:"dry_run"`
 }
 
 // Name returns the plugin name

@@ -41,7 +41,7 @@ database = "soundtouch"
 #
 ## dry_run indicates that the plugin dumps lineporoto for the influxDB conncetion
 ## as curl statement. 
- dry_run = true
+dry_run = true
 ## 
 ## terminate indicates whether no further plugin will be called after this plugin has been executed
 # terminate = true
