@@ -83,18 +83,18 @@ func (d *Logger) Enable() { d.suspended = false }
 
 // Execute runs the plugin with the given parameter
 func (d *Logger) Execute(pluginName string, update soundtouch.Update, speaker soundtouch.Speaker) {
+	mLogger := log.WithFields(log.Fields{
+		"Plugin":        name,
+		"Speaker":       speaker.Name(),
+		"UpdateMsgType": reflect.TypeOf(update.Value).Name(),
+	})
+	mLogger.Debugln("Executing", pluginName)
 	if len(d.IgnoreMessages) > 0 && isIn(reflect.TypeOf(update.Value).Name(), d.IgnoreMessages) {
 		return
 	}
 	if len(d.Speakers) > 0 && !isIn(speaker.Name(), d.Speakers) {
 		return
 	}
-
-	mLogger := log.WithFields(log.Fields{
-		"Plugin":        name,
-		"Speaker":       speaker.Name(),
-		"UpdateMsgType": reflect.TypeOf(update.Value).Name(),
-	})
 	mLogger.Infof("%v\n", update)
 }
 

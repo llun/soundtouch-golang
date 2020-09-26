@@ -76,17 +76,18 @@ func (d *MagicZone) Enable() { d.suspended = false }
 
 // Execute runs the plugin with the given parameter
 func (d *MagicZone) Execute(pluginName string, update soundtouch.Update, speaker soundtouch.Speaker) {
-	typeName := reflect.TypeOf(update.Value).Name()
-
-	if len(d.Speakers) > 0 && !isIn(speaker.Name(), d.Speakers) {
-		return
-	}
-
 	mLogger := log.WithFields(log.Fields{
 		"Plugin":        name,
 		"Speaker":       speaker.Name(),
 		"UpdateMsgType": reflect.TypeOf(update.Value).Name(),
 	})
+	mLogger.Debugln("Executing", pluginName)
+
+	typeName := reflect.TypeOf(update.Value).Name()
+
+	if len(d.Speakers) > 0 && !isIn(speaker.Name(), d.Speakers) {
+		return
+	}
 
 	if !(update.Is("NowPlaying")) {
 		if !update.Is("ConnectionStateUpdated") {

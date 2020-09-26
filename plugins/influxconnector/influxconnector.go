@@ -111,18 +111,20 @@ func (d *InfluxDB) Enable() { d.suspended = false }
 
 // Execute runs the plugin with the given parameter
 func (d *InfluxDB) Execute(pluginName string, update soundtouch.Update, speaker soundtouch.Speaker) {
-	if len(d.LogMessages) > 0 && isIn(reflect.TypeOf(update.Value).Name(), d.LogMessages) {
+	mLogger := log.WithFields(log.Fields{
+		"Plugin":        name,
+		"Speaker":       speaker.Name(),
+		"UpdateMsgType": reflect.TypeOf(update.Value).Name(),
+	})
+	mLogger.Debugln("Executing", pluginName)
+
+	if len(d.LogMessages) > 0 && !isIn(reflect.TypeOf(update.Value).Name(), d.LogMessages) {
 		return
 	}
 	if len(d.Speakers) > 0 && !isIn(speaker.Name(), d.Speakers) {
 		return
 	}
 
-	mLogger := log.WithFields(log.Fields{
-		"Plugin":        name,
-		"Speaker":       speaker.Name(),
-		"UpdateMsgType": reflect.TypeOf(update.Value).Name(),
-	})
 	v, _ := update.Lineproto(influxDB, &update)
 
 	if !(d.Config.DryRun) && v != "" {
