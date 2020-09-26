@@ -1,7 +1,6 @@
 package main
 
 import (
-	"reflect"
 	"time"
 
 	"github.com/jpillora/opts"
@@ -80,16 +79,6 @@ func main() {
 
 	soundtouchNetwork["Office"].SetVolume(data.TargetVolume)
 	time.Sleep(2 * time.Second)
-
-}
-
-func basicHandler(hndlName string, update soundtouch.Update, speaker soundtouch.Speaker) {
-
-	mLogger := log.WithFields(log.Fields{
-		"Speaker":       speaker.Name(),
-		"UpdateMsgType": reflect.TypeOf(update.Value).Name(),
-	})
-	mLogger.Infof("%v\n", update)
 
 }
 
