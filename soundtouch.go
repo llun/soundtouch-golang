@@ -25,7 +25,7 @@ type Speaker struct {
 	WebSocketURL url.URL
 	DeviceInfo   Info
 	conn         *websocket.Conn
-	webSocketCh  chan *Update
+	WebSocketCh  chan *Update
 	Plugins      []Plugin
 }
 

@@ -116,7 +116,7 @@ func getDevices(conf NetworkConfig, closeChannel bool) (speakers chan *Speaker) 
 				go func(s *Speaker, msgChan chan *Update) {
 					// defer wg.Done()
 					webSocketCh, _ := s.Listen()
-					s.webSocketCh = webSocketCh
+					s.WebSocketCh = webSocketCh
 					s.Execute(webSocketCh)
 				}(speaker, messageCh)
 
