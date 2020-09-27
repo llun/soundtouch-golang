@@ -6,10 +6,10 @@ title = "Configuration example"
 interface="en0"
 no_of_soundtouch_systems=7
 
-[logger]
-speakers = ["Office"]
-ignore_messages = ["ConnectionStateUpdated"]
-terminate  = false
+# [logger]
+# speakers = ["Office"]
+# ignore_messages = ["ConnectionStateUpdated"]
+# terminate  = false
 
 [episodeCollector]
 speakers = ["Office"]
@@ -17,31 +17,47 @@ artists = ["Drei Fragezeichen", "Umberto Eco"]
 terminate  = false
 database = "episodes.db"
 
-[magicZone]
+# [magicZone]
 ## ordered list of speakers that should be grouped in zones. All if empty.
 # speakers = ["Office", "Kitchen"]
 
 ## terminate indic ates whether no further plugin will be called after this plugin has been executed
 # terminate = false
 
-[influxDB]
-## speakers for which messages should be logged. If empty, all 
-# speakers = ["Office", "Kitchen"]
+# [influxDB]
+# ## speakers for which messages should be logged. If empty, all 
+# # speakers = ["Office", "Kitchen"]
 
-## log_messages describes the message types to be logged
-## one or more of "ConnectionStateUpdated", "NowPlaying", "Volume"
-## all if empty
-# log_messages = ["ConnectionStateUpdated", "NowPlaying", "Volume"] 
+# ## log_messages describes the message types to be logged
+# ## one or more of "ConnectionStateUpdated", "NowPlaying", "Volume"
+# ## all if empty
+# # log_messages = ["ConnectionStateUpdated", "NowPlaying", "Volume"] 
   
-## URL of the InfluxDB
-influxURL = "http://influxdb:8086"
+# ## URL of the InfluxDB
+# influxURL = "http://influxdb:8086"
 
-## Database where to store the events
-database = "soundtouch"
-#
-## dry_run indicates that the plugin dumps lineporoto for the influxDB conncetion
-## as curl statement. 
-dry_run = true
-## 
+# ## Database where to store the events
+# database = "soundtouch"
+# #
+# ## dry_run indicates that the plugin dumps lineporoto for the influxDB conncetion
+# ## as curl statement. 
+# dry_run = true
+# ## 
+# ## terminate indicates whether no further plugin will be called after this plugin has been executed
+# # terminate = true
+
+## Enabling the volumeButler plugin
+[volumeButler]
+
+## speakers for which volumeButler will handle volumes. None if empty. 
+speakers = ["Office", "Schlafzimmer"]
+
+## For which artists volumes should be handled
+## all if empty
+artists = ["Drei Fragezeichen","John Sinclair"] 
+
 ## terminate indicates whether no further plugin will be called after this plugin has been executed
 # terminate = true
+
+## database contains the directory name for the episodes database
+database = "episodes.db"

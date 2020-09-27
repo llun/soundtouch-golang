@@ -115,6 +115,7 @@ func (d *Collector) Execute(pluginName string, update soundtouch.Update, speaker
 		"UpdateMsgType": reflect.TypeOf(update.Value).Name(),
 	})
 	mLogger.Debugln("Executing", pluginName)
+	mLogger.Debugf("  with %#v", d)
 
 	if len(d.Speakers) == 0 || !isIn(speaker.Name(), d.Speakers) {
 		mLogger.Debugln("Speaker not handled. --> Done!")
@@ -143,19 +144,24 @@ func (d *Collector) Execute(pluginName string, update soundtouch.Update, speaker
 	//			set the volume
 	if storedAlbum.Volume != 0 && time.Now().After(storedAlbum.LastUpdated.Add(20*time.Minute)) {
 		// Only setting a volume if it was last update more than 20 minutes ago
+		mLogger.Infof("Stored volume was set more than 20minutes ago\n")
+		mLogger.Infof("Setting volume to %d\n", storedAlbum.Volume)
 		speaker.SetVolume(storedAlbum.Volume)
 	}
 
 	// wait for a minute and process last volume observed
 	// construct the mean value of current and past volumes
 	// store the update value
+	mLogger.Infof("Going to sleep for 60s\n")
 	time.Sleep(60 * time.Second)
 
 	// clear message and keep last volume update
+	mLogger.Infof("Scanning for Volume\n")
 	lastVolume := ScanForVolume(&speaker)
 	d.ReadDB(speaker.Name(), album, storedAlbum)
 	if lastVolume != nil {
 		storedAlbum.Volume = storedAlbum.calcNewVolume(lastVolume.TargetVolume)
+		mLogger.Infof("writing volume to %v\n", storedAlbum.Volume)
 		d.scribbleDb.Write(speaker.Name(), album, &storedAlbum)
 	}
 }
@@ -214,11 +220,19 @@ func (d *Collector) ReadAlbumDB(album string, updateMsg soundtouch.Update) *dbEn
 		return nil
 	}
 
+	mLogger := log.WithFields(log.Fields{
+		"Plugin":        name,
+		"Speaker":       speaker.Name(),
+		"UpdateMsgType": reflect.TypeOf(updateMsg.Value).Name(),
+	})
+
 	storedAlbum := d.ReadDB(speaker.Name(), album, &dbEntry{})
 
 	if storedAlbum.AlbumName == "" {
+		mLogger.Infof("Album %s not yet known. Reading volume.", storedAlbum.AlbumName)
 		// no, write this into the database
 		retrievedVol, _ := speaker.Volume()
+		mLogger.Infof("Volume is %d", retrievedVol.ActualVolume)
 		storedAlbum.AlbumName = album
 		// HYPO: We are in observation window, then the current volume could also
 		// be a good measurement
@@ -247,24 +261,26 @@ func (d *Collector) ReadDB(speakerName string, album string, currentAlbum *dbEnt
 
 func ScanForVolume(m *soundtouch.Speaker) *soundtouch.Volume {
 	var lastVolume *soundtouch.Volume
+	var mLogger *log.Entry
 	for scanMsg := range m.WebSocketCh {
 		typeName := reflect.TypeOf(scanMsg.Value).Name()
-		mLogger2 := log.WithFields(log.Fields{
-			"Speaker":     m.Name(),
-			"MessageType": typeName,
+		mLogger = log.WithFields(log.Fields{
+			"Plugin":        name,
+			"Speaker":       m.Name(),
+			"UpdateMsgType": typeName,
 		})
-
 		if scanMsg.Is("Volume") {
 			aVol, _ := scanMsg.Value.(soundtouch.Volume)
 			lastVolume = &aVol
-			mLogger2.Printf("Ignoring! Volume: %#v", lastVolume)
+			mLogger.Printf("Ignoring! Volume: %#v", lastVolume)
 		} else {
-			mLogger2.Debugf("Ignoring!! %s\n", typeName)
+			mLogger.Debugf("Ignoring!! %s\n", typeName)
 		}
 		if len(m.WebSocketCh) == 0 {
 			break
 		}
 	}
+	mLogger.Infof("lastVolume was %d\n", lastVolume.ActualVolume)
 	return lastVolume
 }
 

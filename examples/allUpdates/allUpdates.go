@@ -13,6 +13,7 @@ import (
 	"github.com/theovassiliou/soundtouch-golang/plugins/influxconnector"
 	"github.com/theovassiliou/soundtouch-golang/plugins/logger"
 	"github.com/theovassiliou/soundtouch-golang/plugins/magiczone"
+	"github.com/theovassiliou/soundtouch-golang/plugins/volumebutler"
 )
 
 var conf = config{}
@@ -34,7 +35,8 @@ type tomlConfig struct {
 	Logger           *logger.Config           `toml:"logger"`
 	EpisodeCollector *episodecollector.Config `toml:"episodeCollector"`
 	MagicZone        *magiczone.Config        `toml:"magicZone"`
-	InfluxDB         *influxconnector.Config
+	InfluxDB         *influxconnector.Config  `toml:"influxDB"`
+	VolumeButler     *volumebutler.Config     `toml:"volumeButler"`
 }
 
 func main() {
@@ -85,6 +87,10 @@ func main() {
 
 	if config.InfluxDB != nil {
 		pl = append(pl, influxconnector.NewLogger(*config.InfluxDB))
+	}
+
+	if config.VolumeButler != nil {
+		pl = append(pl, volumebutler.NewCollector(*config.VolumeButler))
 	}
 
 	nConf := soundtouch.NetworkConfig{
