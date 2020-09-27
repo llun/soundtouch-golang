@@ -78,7 +78,7 @@ type Config struct {
 }
 
 // Name returns the plugin name
-func (d *VolumeButler) Name() string {
+func (vb *VolumeButler) Name() string {
 	return name
 }
 
@@ -91,22 +91,22 @@ type dbEntry struct {
 }
 
 // Description returns a string explaining the purpose of this plugin
-func (d *VolumeButler) Description() string { return description }
+func (vb *VolumeButler) Description() string { return description }
 
 // SampleConfig returns text explaining how plugin should be configured
-func (d *VolumeButler) SampleConfig() string { return sampleConfig }
+func (vb *VolumeButler) SampleConfig() string { return sampleConfig }
 
 // Terminate indicates that no further plugin will be executed on this speaker
-func (d *VolumeButler) Terminate() bool { return d.Config.Terminate }
+func (vb *VolumeButler) Terminate() bool { return vb.Config.Terminate }
 
 // Disable temporarely the execution of the plugin
-func (d *VolumeButler) Disable() { d.suspended = true }
+func (vb *VolumeButler) Disable() { vb.suspended = true }
 
 // Enable temporarely the execution of the plugin
-func (d *VolumeButler) Enable() { d.suspended = false }
+func (vb *VolumeButler) Enable() { vb.suspended = false }
 
 // Execute runs the plugin with the given parameter
-func (d *VolumeButler) Execute(pluginName string, update soundtouch.Update, speaker soundtouch.Speaker) {
+func (vb *VolumeButler) Execute(pluginName string, update soundtouch.Update, speaker soundtouch.Speaker) {
 
 	typeName := reflect.TypeOf(update.Value).Name()
 	mLogger := log.WithFields(log.Fields{
@@ -116,7 +116,7 @@ func (d *VolumeButler) Execute(pluginName string, update soundtouch.Update, spea
 	})
 	mLogger.Debugln("Executing", pluginName)
 
-	if len(d.Speakers) == 0 || !isIn(speaker.Name(), d.Speakers) {
+	if len(vb.Speakers) == 0 || !isIn(speaker.Name(), vb.Speakers) {
 		mLogger.Debugln("Speaker not handled. --> Done!")
 		return
 	}
@@ -129,14 +129,14 @@ func (d *VolumeButler) Execute(pluginName string, update soundtouch.Update, spea
 	artist := update.Artist()
 	album := update.Album()
 
-	if !isIn(artist, d.Config.Artists) || !update.HasContentItem() {
+	if !isIn(artist, vb.Config.Artists) || !update.HasContentItem() {
 		mLogger.Debugf("Ignoring album %s from %s\n", album, artist)
 		return
 	}
 	mLogger.Infof("Found album %s from %s\n", album, artist)
 	// time window independend
 	// Do we know this album already?  - read from database
-	storedAlbum := d.ReadAlbumDB(album, update)
+	storedAlbum := vb.ReadAlbumDB(album, update)
 
 	// time window and speaker depended
 	// 		if available for this album
@@ -157,30 +157,30 @@ func (d *VolumeButler) Execute(pluginName string, update soundtouch.Update, spea
 	// clear message and keep last volume update
 	mLogger.Infof("Scanning for Volume\n")
 	lastVolume := ScanForVolume(&speaker)
-	d.ReadDB(speaker.Name(), album, storedAlbum)
+	vb.ReadDB(speaker.Name(), album, storedAlbum)
 	if lastVolume != nil {
 		storedAlbum.Volume = storedAlbum.calcNewVolume(lastVolume.TargetVolume)
 		mLogger.Infof("writing volume to %v\n", storedAlbum.Volume)
-		d.scribbleDb.Write(speaker.Name(), album, &storedAlbum)
+		vb.scribbleDb.Write(speaker.Name(), album, &storedAlbum)
 	}
 }
 
-func (d *VolumeButler) readDB(album string, currentAlbum *dbEntry) *dbEntry {
+func (vb *VolumeButler) readDB(album string, currentAlbum *dbEntry) *dbEntry {
 	if currentAlbum == nil {
 		currentAlbum = &dbEntry{}
 	}
-	d.scribbleDb.Read("All", album, &currentAlbum)
+	vb.scribbleDb.Read("All", album, &currentAlbum)
 	return currentAlbum
 }
 
-func (d *VolumeButler) writeDB(album string, storedAlbum *dbEntry) {
+func (vb *VolumeButler) writeDB(album string, storedAlbum *dbEntry) {
 	storedAlbum.LastUpdated = time.Now()
-	d.scribbleDb.Write("All", album, &storedAlbum)
+	vb.scribbleDb.Write("All", album, &storedAlbum)
 }
 
-func (d *VolumeButler) readAlbumDB(album string, updateMsg soundtouch.Update) *dbEntry {
+func (vb *VolumeButler) readAlbumDB(album string, updateMsg soundtouch.Update) *dbEntry {
 
-	storedAlbum := d.readDB(album, &dbEntry{})
+	storedAlbum := vb.readDB(album, &dbEntry{})
 
 	if storedAlbum.AlbumName == "" {
 		// no, write this into the database
@@ -189,7 +189,7 @@ func (d *VolumeButler) readAlbumDB(album string, updateMsg soundtouch.Update) *d
 		// be a good measurement
 		storedAlbum.DeviceID = updateMsg.DeviceID
 		storedAlbum.ContentItem = updateMsg.ContentItem()
-		d.writeDB(album, storedAlbum)
+		vb.writeDB(album, storedAlbum)
 	}
 	return storedAlbum
 }
@@ -203,7 +203,7 @@ func isIn(name string, selected []string) bool {
 	return false
 }
 
-func (d *VolumeButler) ReadAlbumDB(album string, updateMsg soundtouch.Update) *dbEntry {
+func (vb *VolumeButler) ReadAlbumDB(album string, updateMsg soundtouch.Update) *dbEntry {
 
 	speaker := soundtouch.GetSpeaker(updateMsg)
 	if speaker == nil {
@@ -216,7 +216,7 @@ func (d *VolumeButler) ReadAlbumDB(album string, updateMsg soundtouch.Update) *d
 		"UpdateMsgType": reflect.TypeOf(updateMsg.Value).Name(),
 	})
 
-	storedAlbum := d.ReadDB(speaker.Name(), album, &dbEntry{})
+	storedAlbum := vb.ReadDB(speaker.Name(), album, &dbEntry{})
 
 	if storedAlbum.AlbumName == "" {
 		mLogger.Infof("Album %s not yet known. Reading volume.", storedAlbum.AlbumName)
@@ -230,33 +230,33 @@ func (d *VolumeButler) ReadAlbumDB(album string, updateMsg soundtouch.Update) *d
 		storedAlbum.DeviceID = updateMsg.DeviceID
 		storedAlbum.LastUpdated = time.Now()
 		storedAlbum.ContentItem = updateMsg.ContentItem()
-		d.WriteDB(speaker.Name(), album, storedAlbum)
+		vb.WriteDB(speaker.Name(), album, storedAlbum)
 	}
 	return storedAlbum
 }
 
-func (d *VolumeButler) WriteDB(speakerName, album string, storedAlbum *dbEntry) {
+func (vb *VolumeButler) WriteDB(speakerName, album string, storedAlbum *dbEntry) {
 	storedAlbum.LastUpdated = time.Now()
-	d.scribbleDb.Write(speakerName, album, &storedAlbum)
-	d.scribbleDb.Write("All", album, &storedAlbum)
+	vb.scribbleDb.Write(speakerName, album, &storedAlbum)
+	vb.scribbleDb.Write("All", album, &storedAlbum)
 }
 
-func (d *VolumeButler) ReadDB(speakerName string, album string, currentAlbum *dbEntry) *dbEntry {
+func (vb *VolumeButler) ReadDB(speakerName string, album string, currentAlbum *dbEntry) *dbEntry {
 	if currentAlbum == nil {
 		currentAlbum = &dbEntry{}
 	}
-	d.scribbleDb.Read(speakerName, album, &currentAlbum)
+	vb.scribbleDb.Read(speakerName, album, &currentAlbum)
 	return currentAlbum
 }
 
-func ScanForVolume(m *soundtouch.Speaker) *soundtouch.Volume {
+func ScanForVolume(spk *soundtouch.Speaker) *soundtouch.Volume {
 	var lastVolume *soundtouch.Volume
 	var mLogger *log.Entry
-	for scanMsg := range m.WebSocketCh {
+	for scanMsg := range spk.WebSocketCh {
 		typeName := reflect.TypeOf(scanMsg.Value).Name()
 		mLogger = log.WithFields(log.Fields{
 			"Plugin":        name,
-			"Speaker":       m.Name(),
+			"Speaker":       spk.Name(),
 			"UpdateMsgType": typeName,
 		})
 		if scanMsg.Is("Volume") {
@@ -266,7 +266,7 @@ func ScanForVolume(m *soundtouch.Speaker) *soundtouch.Volume {
 		} else {
 			mLogger.Debugf("Ignoring!! %s\n", typeName)
 		}
-		if len(m.WebSocketCh) == 0 {
+		if len(spk.WebSocketCh) == 0 {
 			break
 		}
 	}
