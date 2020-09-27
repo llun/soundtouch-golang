@@ -147,3 +147,13 @@ func (u Update) ContentItem() ContentItem {
 	return ContentItem{}
 
 }
+
+// GetSpeaker returns the Speaker instance the Update has been send from
+func GetSpeaker(updateMsg Update) *Speaker {
+	for _, aKnownDevice := range GetKnownDevices() {
+		if aKnownDevice.DeviceID() == updateMsg.DeviceID {
+			return aKnownDevice
+		}
+	}
+	return nil
+}
