@@ -20,7 +20,7 @@ func Test_contains(t *testing.T) {
 			Raw:      nil,
 		},
 		conn:        &websocket.Conn{},
-		webSocketCh: make(chan *Update),
+		WebSocketCh: make(chan *Update),
 		Plugins:     nil,
 	}
 	s2 := Speaker{
@@ -35,7 +35,7 @@ func Test_contains(t *testing.T) {
 			Raw:      nil,
 		},
 		conn:        &websocket.Conn{},
-		webSocketCh: make(chan *Update),
+		WebSocketCh: make(chan *Update),
 		Plugins:     nil,
 	}
 	ss := make(Speakers)
