@@ -31,21 +31,21 @@ const sampleConfig = `
 
 const description = "Automatically adjust sets volume based on listening history."
 
-// Collector describes the plugin. It has a
+// VolumeButler describes the plugin. It has a
 // Config to store the configuration
 // Plugin the plugin function
 // suspended indicates that the plugin is temporarely suspended
 // scribbleDB a link to the volumes database
-type Collector struct {
+type VolumeButler struct {
 	Config
 	Plugin     soundtouch.PluginFunc
 	suspended  bool
 	scribbleDb *scribble.Driver
 }
 
-// NewCollector creates a new Collector plugin with the configuration
-func NewCollector(config Config) (d *Collector) {
-	d = &Collector{}
+// NewVolumeButler creates a new Collector plugin with the configuration
+func NewVolumeButler(config Config) (d *VolumeButler) {
+	d = &VolumeButler{}
 	d.Config = config
 
 	mLogger := log.WithFields(log.Fields{
@@ -78,7 +78,7 @@ type Config struct {
 }
 
 // Name returns the plugin name
-func (d *Collector) Name() string {
+func (d *VolumeButler) Name() string {
 	return name
 }
 
@@ -91,22 +91,22 @@ type dbEntry struct {
 }
 
 // Description returns a string explaining the purpose of this plugin
-func (d *Collector) Description() string { return description }
+func (d *VolumeButler) Description() string { return description }
 
 // SampleConfig returns text explaining how plugin should be configured
-func (d *Collector) SampleConfig() string { return sampleConfig }
+func (d *VolumeButler) SampleConfig() string { return sampleConfig }
 
 // Terminate indicates that no further plugin will be executed on this speaker
-func (d *Collector) Terminate() bool { return d.Config.Terminate }
+func (d *VolumeButler) Terminate() bool { return d.Config.Terminate }
 
 // Disable temporarely the execution of the plugin
-func (d *Collector) Disable() { d.suspended = true }
+func (d *VolumeButler) Disable() { d.suspended = true }
 
 // Enable temporarely the execution of the plugin
-func (d *Collector) Enable() { d.suspended = false }
+func (d *VolumeButler) Enable() { d.suspended = false }
 
 // Execute runs the plugin with the given parameter
-func (d *Collector) Execute(pluginName string, update soundtouch.Update, speaker soundtouch.Speaker) {
+func (d *VolumeButler) Execute(pluginName string, update soundtouch.Update, speaker soundtouch.Speaker) {
 
 	typeName := reflect.TypeOf(update.Value).Name()
 	mLogger := log.WithFields(log.Fields{
@@ -115,7 +115,6 @@ func (d *Collector) Execute(pluginName string, update soundtouch.Update, speaker
 		"UpdateMsgType": reflect.TypeOf(update.Value).Name(),
 	})
 	mLogger.Debugln("Executing", pluginName)
-	mLogger.Debugf("  with %#v", d)
 
 	if len(d.Speakers) == 0 || !isIn(speaker.Name(), d.Speakers) {
 		mLogger.Debugln("Speaker not handled. --> Done!")
@@ -166,7 +165,7 @@ func (d *Collector) Execute(pluginName string, update soundtouch.Update, speaker
 	}
 }
 
-func (d *Collector) readDB(album string, currentAlbum *dbEntry) *dbEntry {
+func (d *VolumeButler) readDB(album string, currentAlbum *dbEntry) *dbEntry {
 	if currentAlbum == nil {
 		currentAlbum = &dbEntry{}
 	}
@@ -174,12 +173,12 @@ func (d *Collector) readDB(album string, currentAlbum *dbEntry) *dbEntry {
 	return currentAlbum
 }
 
-func (d *Collector) writeDB(album string, storedAlbum *dbEntry) {
+func (d *VolumeButler) writeDB(album string, storedAlbum *dbEntry) {
 	storedAlbum.LastUpdated = time.Now()
 	d.scribbleDb.Write("All", album, &storedAlbum)
 }
 
-func (d *Collector) readAlbumDB(album string, updateMsg soundtouch.Update) *dbEntry {
+func (d *VolumeButler) readAlbumDB(album string, updateMsg soundtouch.Update) *dbEntry {
 
 	storedAlbum := d.readDB(album, &dbEntry{})
 
@@ -204,18 +203,9 @@ func isIn(name string, selected []string) bool {
 	return false
 }
 
-func getSpeaker(updateMsg soundtouch.Update) *soundtouch.Speaker {
-	for _, aKnownDevice := range soundtouch.GetKnownDevices() {
-		if aKnownDevice.DeviceID() == updateMsg.DeviceID {
-			return aKnownDevice
-		}
-	}
-	return nil
-}
+func (d *VolumeButler) ReadAlbumDB(album string, updateMsg soundtouch.Update) *dbEntry {
 
-func (d *Collector) ReadAlbumDB(album string, updateMsg soundtouch.Update) *dbEntry {
-
-	speaker := getSpeaker(updateMsg)
+	speaker := soundtouch.GetSpeaker(updateMsg)
 	if speaker == nil {
 		return nil
 	}
@@ -245,13 +235,13 @@ func (d *Collector) ReadAlbumDB(album string, updateMsg soundtouch.Update) *dbEn
 	return storedAlbum
 }
 
-func (d *Collector) WriteDB(speakerName, album string, storedAlbum *dbEntry) {
+func (d *VolumeButler) WriteDB(speakerName, album string, storedAlbum *dbEntry) {
 	storedAlbum.LastUpdated = time.Now()
 	d.scribbleDb.Write(speakerName, album, &storedAlbum)
 	d.scribbleDb.Write("All", album, &storedAlbum)
 }
 
-func (d *Collector) ReadDB(speakerName string, album string, currentAlbum *dbEntry) *dbEntry {
+func (d *VolumeButler) ReadDB(speakerName string, album string, currentAlbum *dbEntry) *dbEntry {
 	if currentAlbum == nil {
 		currentAlbum = &dbEntry{}
 	}
@@ -280,7 +270,10 @@ func ScanForVolume(m *soundtouch.Speaker) *soundtouch.Volume {
 			break
 		}
 	}
-	mLogger.Infof("lastVolume was %d\n", lastVolume.ActualVolume)
+
+	if lastVolume != nil {
+		mLogger.Infof("lastVolume was %d\n", lastVolume.ActualVolume)
+	}
 	return lastVolume
 }
 

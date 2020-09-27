@@ -90,7 +90,7 @@ func main() {
 	}
 
 	if config.VolumeButler != nil {
-		pl = append(pl, volumebutler.NewCollector(*config.VolumeButler))
+		pl = append(pl, volumebutler.NewVolumeButler(*config.VolumeButler))
 	}
 
 	nConf := soundtouch.NetworkConfig{
