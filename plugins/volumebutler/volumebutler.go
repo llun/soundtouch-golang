@@ -82,14 +82,6 @@ func (vb *VolumeButler) Name() string {
 	return name
 }
 
-type dbEntry struct {
-	ContentItem soundtouch.ContentItem
-	AlbumName   string
-	Volume      int
-	DeviceID    string
-	LastUpdated time.Time
-}
-
 // Description returns a string explaining the purpose of this plugin
 func (vb *VolumeButler) Description() string { return description }
 
@@ -136,7 +128,7 @@ func (vb *VolumeButler) Execute(pluginName string, update soundtouch.Update, spe
 	mLogger.Infof("Found album %s from %s\n", album, artist)
 	// time window independend
 	// Do we know this album already?  - read from database
-	storedAlbum := vb.ReadAlbumDB(album, update)
+	storedAlbum := ReadAlbumDB(vb.scribbleDb, album, update)
 
 	// time window and speaker depended
 	// 		if available for this album
@@ -157,41 +149,12 @@ func (vb *VolumeButler) Execute(pluginName string, update soundtouch.Update, spe
 	// clear message and keep last volume update
 	mLogger.Infof("Scanning for Volume\n")
 	lastVolume := ScanForVolume(&speaker)
-	vb.ReadDB(speaker.Name(), album, storedAlbum)
+	ReadDB(vb.scribbleDb, speaker.Name(), album, storedAlbum)
 	if lastVolume != nil {
 		storedAlbum.Volume = storedAlbum.calcNewVolume(lastVolume.TargetVolume)
 		mLogger.Infof("writing volume to %v\n", storedAlbum.Volume)
 		vb.scribbleDb.Write(speaker.Name(), album, &storedAlbum)
 	}
-}
-
-func (vb *VolumeButler) readDB(album string, currentAlbum *dbEntry) *dbEntry {
-	if currentAlbum == nil {
-		currentAlbum = &dbEntry{}
-	}
-	vb.scribbleDb.Read("All", album, &currentAlbum)
-	return currentAlbum
-}
-
-func (vb *VolumeButler) writeDB(album string, storedAlbum *dbEntry) {
-	storedAlbum.LastUpdated = time.Now()
-	vb.scribbleDb.Write("All", album, &storedAlbum)
-}
-
-func (vb *VolumeButler) readAlbumDB(album string, updateMsg soundtouch.Update) *dbEntry {
-
-	storedAlbum := vb.readDB(album, &dbEntry{})
-
-	if storedAlbum.AlbumName == "" {
-		// no, write this into the database
-		storedAlbum.AlbumName = album
-		// HYPO: We are in observation window, then the current volume could also
-		// be a good measurement
-		storedAlbum.DeviceID = updateMsg.DeviceID
-		storedAlbum.ContentItem = updateMsg.ContentItem()
-		vb.writeDB(album, storedAlbum)
-	}
-	return storedAlbum
 }
 
 func isIn(name string, selected []string) bool {
@@ -201,52 +164,6 @@ func isIn(name string, selected []string) bool {
 		}
 	}
 	return false
-}
-
-func (vb *VolumeButler) ReadAlbumDB(album string, updateMsg soundtouch.Update) *dbEntry {
-
-	speaker := soundtouch.GetSpeaker(updateMsg)
-	if speaker == nil {
-		return nil
-	}
-
-	mLogger := log.WithFields(log.Fields{
-		"Plugin":        name,
-		"Speaker":       speaker.Name(),
-		"UpdateMsgType": reflect.TypeOf(updateMsg.Value).Name(),
-	})
-
-	storedAlbum := vb.ReadDB(speaker.Name(), album, &dbEntry{})
-
-	if storedAlbum.AlbumName == "" {
-		mLogger.Infof("Album %s not yet known. Reading volume.", storedAlbum.AlbumName)
-		// no, write this into the database
-		retrievedVol, _ := speaker.Volume()
-		mLogger.Infof("Volume is %d", retrievedVol.ActualVolume)
-		storedAlbum.AlbumName = album
-		// HYPO: We are in observation window, then the current volume could also
-		// be a good measurement
-		storedAlbum.Volume = retrievedVol.TargetVolume
-		storedAlbum.DeviceID = updateMsg.DeviceID
-		storedAlbum.LastUpdated = time.Now()
-		storedAlbum.ContentItem = updateMsg.ContentItem()
-		vb.WriteDB(speaker.Name(), album, storedAlbum)
-	}
-	return storedAlbum
-}
-
-func (vb *VolumeButler) WriteDB(speakerName, album string, storedAlbum *dbEntry) {
-	storedAlbum.LastUpdated = time.Now()
-	vb.scribbleDb.Write(speakerName, album, &storedAlbum)
-	vb.scribbleDb.Write("All", album, &storedAlbum)
-}
-
-func (vb *VolumeButler) ReadDB(speakerName string, album string, currentAlbum *dbEntry) *dbEntry {
-	if currentAlbum == nil {
-		currentAlbum = &dbEntry{}
-	}
-	vb.scribbleDb.Read(speakerName, album, &currentAlbum)
-	return currentAlbum
 }
 
 func ScanForVolume(spk *soundtouch.Speaker) *soundtouch.Volume {
@@ -275,12 +192,4 @@ func ScanForVolume(spk *soundtouch.Speaker) *soundtouch.Volume {
 		mLogger.Infof("lastVolume was %d\n", lastVolume.ActualVolume)
 	}
 	return lastVolume
-}
-
-func (db *dbEntry) calcNewVolume(currVolume int) int {
-	oldVol := db.Volume
-	if oldVol == 0 {
-		oldVol = currVolume
-	}
-	return (oldVol + currVolume) / 2
 }
