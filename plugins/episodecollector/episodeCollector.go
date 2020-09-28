@@ -2,7 +2,6 @@ package episodecollector
 
 import (
 	"reflect"
-	"time"
 
 	scribble "github.com/nanobox-io/golang-scribble"
 	log "github.com/sirupsen/logrus"
@@ -81,14 +80,6 @@ func (d *Collector) Name() string {
 	return name
 }
 
-type dbEntry struct {
-	ContentItem soundtouch.ContentItem
-	AlbumName   string
-	Volume      int
-	DeviceID    string
-	LastUpdated time.Time
-}
-
 // Description returns a string explaining the purpose of this plugin
 func (d *Collector) Description() string { return description }
 
@@ -133,36 +124,7 @@ func (d *Collector) Execute(pluginName string, update soundtouch.Update, speaker
 	}
 
 	mLogger.Infof("Found album: %v\n", album)
-	d.readAlbumDB(album, update)
-}
-
-func (d *Collector) readDB(album string, currentAlbum *dbEntry) *dbEntry {
-	if currentAlbum == nil {
-		currentAlbum = &dbEntry{}
-	}
-	d.scribbleDb.Read("All", album, &currentAlbum)
-	return currentAlbum
-}
-
-func (d *Collector) writeDB(album string, storedAlbum *dbEntry) {
-	storedAlbum.LastUpdated = time.Now()
-	d.scribbleDb.Write("All", album, &storedAlbum)
-}
-
-func (d *Collector) readAlbumDB(album string, updateMsg soundtouch.Update) *dbEntry {
-
-	storedAlbum := d.readDB(album, &dbEntry{})
-
-	if storedAlbum.AlbumName == "" {
-		// no, write this into the database
-		storedAlbum.AlbumName = album
-		// HYPO: We are in observation window, then the current volume could also
-		// be a good measurement
-		storedAlbum.DeviceID = updateMsg.DeviceID
-		storedAlbum.ContentItem = updateMsg.ContentItem()
-		d.writeDB(album, storedAlbum)
-	}
-	return storedAlbum
+	readAlbumDB(d.scribbleDb, album, update)
 }
 
 func isIn(name string, selected []string) bool {
