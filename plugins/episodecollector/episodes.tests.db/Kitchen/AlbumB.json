@@ -1,0 +1,13 @@
+{
+	"ContentItem": {
+		"Type": "",
+		"Source": "STORED_MUSIC",
+		"Location": "Loc",
+		"Name": "AlbumB",
+		"IsPresetable": true
+	},
+	"AlbumName": "AlbumB",
+	"Volume": 0,
+	"DeviceID": "Dev",
+	"LastUpdated": "0001-01-01 00:00:00 +0000 UTC"
+}
