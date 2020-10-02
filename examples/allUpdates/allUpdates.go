@@ -9,6 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/theovassiliou/soundtouch-golang"
+	"github.com/theovassiliou/soundtouch-golang/plugins/autooff"
 	"github.com/theovassiliou/soundtouch-golang/plugins/episodecollector"
 	"github.com/theovassiliou/soundtouch-golang/plugins/influxconnector"
 	"github.com/theovassiliou/soundtouch-golang/plugins/logger"
@@ -37,6 +38,7 @@ type tomlConfig struct {
 	MagicZone        *magiczone.Config        `toml:"magicZone"`
 	InfluxDB         *influxconnector.Config  `toml:"influxDB"`
 	VolumeButler     *volumebutler.Config     `toml:"volumeButler"`
+	AutoOff          *autooff.Config          `toml:"autoOff"`
 }
 
 func main() {
@@ -91,6 +93,10 @@ func main() {
 
 	if config.VolumeButler != nil {
 		pl = append(pl, volumebutler.NewVolumeButler(*config.VolumeButler))
+	}
+
+	if config.AutoOff != nil {
+		pl = append(pl, autooff.NewCollector(*config.AutoOff))
 	}
 
 	nConf := soundtouch.NetworkConfig{
