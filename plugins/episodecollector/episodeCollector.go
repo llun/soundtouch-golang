@@ -97,23 +97,22 @@ func (d *Collector) Enable() { d.suspended = false }
 
 // Execute runs the plugin with the given parameter
 func (d *Collector) Execute(pluginName string, update soundtouch.Update, speaker soundtouch.Speaker) {
+	if !(update.Is("NowPlaying") || update.Is("Volume")) {
+		// UpdateMessageType not needed. Ignoring.
+		return
+	}
+
+	if len(d.Speakers) > 0 && !isIn(speaker.Name(), d.Speakers) {
+		// Speaker not handled. Ignoring.
+		return
+	}
+
 	mLogger := log.WithFields(log.Fields{
 		"Plugin":        name,
 		"Speaker":       speaker.Name(),
 		"UpdateMsgType": reflect.TypeOf(update.Value).Name(),
 	})
 	mLogger.Debugln("Executing", pluginName)
-
-	if len(d.Speakers) > 0 && !isIn(speaker.Name(), d.Speakers) {
-		mLogger.Debugln("Speaker not handled. --> Done!")
-		return
-	}
-
-	if !(update.Is("NowPlaying") || update.Is("Volume")) {
-		typeName := reflect.TypeOf(update.Value).Name()
-		mLogger.Debugf("Ignoring %s. --> Done!\n", typeName)
-		return
-	}
 
 	artist := update.Artist()
 	album := update.Album()
