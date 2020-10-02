@@ -10,25 +10,29 @@ ignore_messages = ["ConnectionStateUpdated"]
 terminate  = false
 
 [episodeCollector]
-speakers = ["Office", "Schlafzimmer"]
+speakers = ["Schlafzimmer"]
 artists = ["Drei Fragezeichen", "Umberto Eco"]
 database = "episodes.db"
 terminate  = false
 
-[magicZone]
-speakers = ["Office", "Kitchen"]
-terminate = false
+[autoOff]
+    [autoOff.Wohnzimmer]
+    thenOff = ["Küche","Schrank"]
 
-[influxDB]
-speakers = []
-log_messages = ["ConnectionStateUpdated", "NowPlaying", "Volume"] 
-influxURL = "http://influxdb:8086"
-database = "soundtouch"
-dry_run = true
-terminate = false
+# [magicZone]
+# speakers = ["Kitchen"]
+# terminate = false
 
-[volumeButler]
-speakers = ["Office", "Schlafzimmer"]
-artists = ["Drei Fragezeichen","John Sinclair"] 
-terminate = false
-database = "episodes.db"
+# [influxDB]
+# speakers = []
+# log_messages = ["ConnectionStateUpdated", "NowPlaying", "Volume"] 
+# influxURL = "http://influxdb:8086"
+# database = "soundtouch"
+# dry_run = true
+# terminate = false
+
+# [volumeButler]
+# speakers = ["Office", "Schlafzimmer"]
+# artists = ["Drei Fragezeichen","John Sinclair"] 
+# terminate = false
+# database = "episodes.db"
