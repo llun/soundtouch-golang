@@ -31,6 +31,16 @@ func GetKnownDevices() Speakers {
 	return visibleSpeakers
 }
 
+// GetDevice retuns a speaker for a given name
+func GetDevice(speakerName string) *Speaker {
+	for _, theSpeaker := range visibleSpeakers {
+		if theSpeaker.Name() == speakerName {
+			return theSpeaker
+		}
+	}
+	return nil
+}
+
 // GetDevices starts listening on the indicated interface for the speakers to listen for.
 // passes to speakers the series of speakers that are handled for further processing.
 // Closes the speaker channel after all speakers found.
