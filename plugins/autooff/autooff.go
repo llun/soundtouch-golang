@@ -14,11 +14,9 @@ const sampleConfig = `
   # [autoOff]
   
   ## speakers that trigger an autooff 
-  # 	[group.1]
-  #			ifOn = "Wohnzimmer"
+  # 	[autooff.Wohnzimmer]
   #			thenOff = ["Kueche", "Schrank"]
-  #		[group.2]
-  #			ifOn = "Schlafzimmer"
+  #		[autooff.Schlafzimmer]
   #			thenOff = ["Office"]
 
   ## terminate indicates whether no further plugin will be called after this plugin has been executed
@@ -54,7 +52,6 @@ func NewCollector(config Config) (d *Collector) {
 // Config contains the configuration of the plugin
 // Groups list of Actions.
 type Config map[string]struct {
-	IfOn    string   `toml:"ifOn"`
 	ThenOff []string `toml:"thenOff"`
 }
 
