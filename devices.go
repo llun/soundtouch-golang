@@ -143,7 +143,7 @@ func getDevices(conf NetworkConfig, closeChannel bool) (speakers chan *Speaker) 
 		if closeChannel {
 			close(speakers)
 		}
-		log.Debugf("Found all Soundtouch systems. Normal Operation.")
+		log.Infof("Found all Soundtouch systems. Normal Operation.")
 	}()
 	// wg.Wait()
 	return
