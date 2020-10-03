@@ -37,7 +37,13 @@ func Lookup(iface *net.Interface) <-chan *Speaker {
 	go func() {
 		defer close(speakerCh)
 		for entry := range entriesCh {
-			speakerCh <- NewSpeaker(entry)
+			fSpeaker := NewSpeaker(entry)
+			info, _ := fSpeaker.Info()
+
+			// filter non-soundtouch speakers
+			if info.Name != "" {
+				speakerCh <- fSpeaker
+			}
 		}
 	}()
 
