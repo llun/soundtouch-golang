@@ -92,7 +92,7 @@ func (d *Collector) Execute(pluginName string, update soundtouch.Update, speaker
 			// If speaker is playing and is playing from TV
 			if speaker.IsAlive() && update.ContentItem().Source == "PRODUCT" {
 				for _, offSpeaker := range thenOff.ThenOff {
-					s := soundtouch.GetDevice(offSpeaker)
+					s := soundtouch.GetSpeakerByName(offSpeaker)
 					if s != nil {
 						s.PowerOff()
 					} else {
@@ -102,27 +102,6 @@ func (d *Collector) Execute(pluginName string, update soundtouch.Update, speaker
 			}
 		}
 	}
-	// if len(d.Speakers) > 0 && !isIn(speaker.Name(), d.Speakers) {
-	// 	mLogger.Debugln("Speaker not handled. --> Done!")
-	// 	return
-	// }
-
-	// if !(update.Is("NowPlaying") || update.Is("Volume")) {
-	// 	typeName := reflect.TypeOf(update.Value).Name()
-	// 	mLogger.Debugf("Ignoring %s. --> Done!\n", typeName)
-	// 	return
-	// }
-
-	// artist := update.Artist()
-	// album := update.Album()
-
-	// if !isIn(artist, d.Config.Artists) || !update.HasContentItem() {
-	// 	mLogger.Debugf("Ignoring album: %s\n", album)
-	// 	return
-	// }
-
-	// mLogger.Infof("Found album: %v\n", album)
-	// readAlbumDB(d.scribbleDb, album, update)
 }
 
 func isIn(name string, selected []string) bool {
