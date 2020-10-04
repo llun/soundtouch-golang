@@ -14,6 +14,7 @@ import (
 	"github.com/theovassiliou/soundtouch-golang/plugins/influxconnector"
 	"github.com/theovassiliou/soundtouch-golang/plugins/logger"
 	"github.com/theovassiliou/soundtouch-golang/plugins/magiczone"
+	"github.com/theovassiliou/soundtouch-golang/plugins/telegram"
 	"github.com/theovassiliou/soundtouch-golang/plugins/volumebutler"
 )
 
@@ -39,6 +40,7 @@ type tomlConfig struct {
 	InfluxDB         *influxconnector.Config  `toml:"influxDB"`
 	VolumeButler     *volumebutler.Config     `toml:"volumeButler"`
 	AutoOff          *autooff.Config          `toml:"autoOff"`
+	Telegram         *telegram.Config         `toml:"telegram"`
 }
 
 func main() {
@@ -97,6 +99,10 @@ func main() {
 
 	if config.AutoOff != nil {
 		pl = append(pl, autooff.NewCollector(*config.AutoOff))
+	}
+
+	if config.Telegram != nil {
+		pl = append(pl, telegram.NewTelegramLogger(*config.Telegram))
 	}
 
 	nConf := soundtouch.NetworkConfig{
