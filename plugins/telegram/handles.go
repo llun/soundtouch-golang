@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/theovassiliou/soundtouch-golang"
@@ -10,13 +11,13 @@ import (
 
 // assertSender returns false in case user is not authorized
 func (d *TelegramLogger) assertSender(sender *tb.User) bool {
-	return isIn(string(sender.ID), d.Config.AuthorizedSender)
+	return isIn(strconv.Itoa(sender.ID), d.Config.AuthorizedSender)
 }
 
 // /status [speakerName]
 func (d *TelegramLogger) status(m *tb.Message) {
 	if !d.assertSender(m.Sender) {
-		d.bot.Send(m.Sender, "Not Authorized. Use /authorize (authKey)")
+		d.bot.Send(m.Sender, fmt.Sprintf("%s (%v) not authorized. Use /authorize (authKey)", m.Sender.Username, m.Sender.ID))
 		return
 	}
 
@@ -46,6 +47,12 @@ func (d *TelegramLogger) status(m *tb.Message) {
 			fmt.Fprintln(&b, "  zone.SenderIPAddress: ", zone.SenderIPAddress)
 			fmt.Fprintln(&b, "  zone.SenderIsMaster: ", zone.SenderIsMaster)
 			fmt.Fprintln(&b, "  zone.Members: ", zone.Members)
+
+			if speaker.IsAlive() {
+				np, _ := speaker.NowPlaying()
+				np.Raw = []byte{}
+				fmt.Fprintf(&b, "Now Playing: %#v", np)
+			}
 		}
 	}
 	d.bot.Send(m.Sender, b.String())
@@ -62,9 +69,12 @@ func (d *TelegramLogger) authorize(m *tb.Message) {
 
 	text := m.Text
 	authParam := strings.Split(text, " ")
-	if authKey == authParam[1] {
-		d.Config.AuthorizedSender = append(d.Config.AuthorizedSender, string(m.Sender.ID))
+	if len(authParam) >= 2 && authKey == authParam[1] {
+		d.Config.AuthorizedSender = append(d.Config.AuthorizedSender, strconv.Itoa(m.Sender.ID))
 		d.bot.Send(m.Sender, "Authorization granted")
+		return
+	} else if len(authParam) < 2 {
+		d.bot.Send(m.Sender, "authorization key mising or wrong")
 		return
 	}
 

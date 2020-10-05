@@ -1,7 +1,9 @@
 package telegram
 
 import (
+	"fmt"
 	"reflect"
+	"strconv"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -73,6 +75,52 @@ func NewTelegramLogger(config Config) (d *TelegramLogger) {
 	}
 	d.bot = b
 
+	var (
+		// Universal markup builders.
+		menu     = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
+		selector = &tb.ReplyMarkup{}
+
+		// Reply buttons.
+		btnHelp     = menu.Text("ℹ Help")
+		btnSettings = menu.Text("⚙ Settings")
+
+		// Inline buttons.
+		//
+		// Pressing it will cause the client to
+		// send the bot a callback.
+		//
+		// Make sure Unique stays unique as per button kind,
+		// as it has to be for callback routing to work.
+		//
+		btnPrev = selector.Data("⬅", "prev", "TEXT btnPrev")
+		btnNext = selector.Data("➡", "next", "TEXT btnNext")
+	)
+
+	menu.Reply(
+		menu.Row(btnHelp),
+		menu.Row(btnSettings),
+	)
+	selector.Inline(
+		selector.Row(btnPrev, btnNext),
+	)
+
+	// On reply button pressed (message)
+	b.Handle(&btnHelp, func(m *tb.Message) {
+		b.Send(m.Sender, fmt.Sprintf("Help %v!", m.Sender.FirstName))
+
+	})
+
+	// On inline button pressed (callback)
+	b.Handle(&btnPrev, func(c *tb.Callback) {
+		b.Respond(c, &tb.CallbackResponse{
+			CallbackID: "",
+			Text:       "testadfad ",
+			ShowAlert:  false,
+			URL:        "",
+		},
+		)
+	})
+
 	b.Handle("/status", func(m *tb.Message) {
 		d.status(m)
 	})
@@ -86,13 +134,17 @@ func NewTelegramLogger(config Config) (d *TelegramLogger) {
 	})
 
 	b.Handle("/hello", func(m *tb.Message) {
-		b.Send(m.Sender, "Hello World!")
+		b.Send(m.Sender, fmt.Sprintf("Hello %v!", m.Sender.FirstName), menu)
 	})
-
+	s, _ := strconv.Atoi(d.Config.AuthorizedSender[0])
+	user := &tb.User{ID: s}
 	b.Handle(tb.OnText, func(m *tb.Message) {
 		mLogger.Infof("Recevived telegram message: %#v\n", m.Text)
 		mLogger.Infof("  by: %v\n", m.Sender)
-
+		if m.Sender.ID != s {
+			b.Send(user, fmt.Sprintf("Recevived telegram message: %#v\n  by: %v\n", m.Text, m.Sender))
+		}
+		b.Send(user, fmt.Sprintf("Recevived telegram message: %#v\n  by: %v\n", m.Text, m.Sender))
 	})
 
 	mLogger.Infof("Initialised\n")
@@ -136,8 +188,7 @@ func (d *TelegramLogger) Execute(pluginName string, update soundtouch.Update, sp
 		"Speaker":       speaker.Name(),
 		"UpdateMsgType": reflect.TypeOf(update.Value).Name(),
 	})
-	mLogger.Debugln("Executing", pluginName)
-	mLogger.Infof("%v\n", update)
+	mLogger.Debugf("Executing %v on %v", pluginName, reflect.TypeOf(update.Value).Name())
 }
 
 func isIn(name string, selected []string) bool {
