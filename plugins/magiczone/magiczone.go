@@ -9,6 +9,8 @@ import (
 
 var name = "MagicZone"
 
+const description = "Groups speaker that play the same content in a zone"
+
 const sampleConfig = `
   ## Enabling the magicZone plugin
   # [magicZone]
@@ -20,7 +22,13 @@ const sampleConfig = `
   # terminate = true
 `
 
-const description = "Groups speaker that play the same content in a zone"
+// Config contains the configuration of the plugin
+// Speakers list of SpeakerNames the handler is added. All if empty
+// Terminate indicates whether this is the last handler to be called
+type Config struct {
+	Speakers  []string `toml:"-"`
+	Terminate bool     `toml:"terminate"`
+}
 
 // MagicZone describes the plugin. It has a
 // Config to store the configuration
@@ -44,14 +52,6 @@ func NewCollector(config Config) (d *MagicZone) {
 	mLogger.Infof("Initialised\n")
 
 	return d
-}
-
-// Config contains the configuration of the plugin
-// Speakers list of SpeakerNames the handler is added. All if empty
-// Terminate indicates whether this is the last handler to be called
-type Config struct {
-	Speakers  []string `toml:"-"`
-	Terminate bool     `toml:"terminate"`
 }
 
 // Name returns the plugin name
@@ -80,7 +80,7 @@ func (d *MagicZone) Execute(pluginName string, update soundtouch.Update, speaker
 		return
 	}
 
-	if len(d.Speakers) > 0 && !isIn(speaker.Name(), d.Speakers) {
+	if len(d.Speakers) > 0 && !sliceContains(speaker.Name(), d.Speakers) {
 		return
 	}
 
@@ -155,8 +155,8 @@ func (d *MagicZone) Execute(pluginName string, update soundtouch.Update, speaker
 
 }
 
-func isIn(name string, selected []string) bool {
-	for _, s := range selected {
+func sliceContains(name string, list []string) bool {
+	for _, s := range list {
 		if name == s {
 			return true
 		}

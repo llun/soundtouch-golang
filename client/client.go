@@ -82,8 +82,8 @@ func main() {
 
 }
 
-func isIn(name string, selected []string) bool {
-	for _, s := range selected {
+func sliceContains(name string, list []string) bool {
+	for _, s := range list {
 		if name == s {
 			return true
 		}

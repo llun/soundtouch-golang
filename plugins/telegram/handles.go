@@ -10,12 +10,12 @@ import (
 )
 
 // assertSender returns false in case user is not authorized
-func (d *TelegramLogger) assertSender(sender *tb.User) bool {
-	return isIn(strconv.Itoa(sender.ID), d.Config.AuthorizedSender)
+func (d *Bot) assertSender(sender *tb.User) bool {
+	return sliceContains(strconv.Itoa(sender.ID), d.Config.AuthorizedSender)
 }
 
 // /status [speakerName]
-func (d *TelegramLogger) status(m *tb.Message) {
+func (d *Bot) status(m *tb.Message) {
 	if !d.assertSender(m.Sender) {
 		d.bot.Send(m.Sender, fmt.Sprintf("%s (%v) not authorized. Use /authorize (authKey)", m.Sender.Username, m.Sender.ID))
 		return
@@ -59,7 +59,7 @@ func (d *TelegramLogger) status(m *tb.Message) {
 }
 
 // /authorize [authkey]
-func (d *TelegramLogger) authorize(m *tb.Message) {
+func (d *Bot) authorize(m *tb.Message) {
 	authKey := d.Config.AuthKey
 
 	if authKey == "" {

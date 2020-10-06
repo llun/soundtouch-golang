@@ -10,6 +10,8 @@ import (
 
 var name = "EpisodeCollector"
 
+const description = "Collects episodes for specific artists"
+
 const sampleConfig = `
   ## Enabling the episodeCollector plugin
   # [episodeCollector]
@@ -28,7 +30,16 @@ const sampleConfig = `
   # database = "episode.db"
 `
 
-const description = "Collects episodes for specific artists"
+// Config contains the configuration of the plugin
+// Speakers list of SpeakerNames the handler is added. All if empty
+// Terminate indicates whether this is the last handler to be called
+// Artists a list of artists for which episodes should be collected
+type Config struct {
+	Speakers  []string `toml:"speakers"`
+	Artists   []string `toml:"artists"`
+	Terminate bool     `toml:"terminate"`
+	Database  string   `toml:"database"`
+}
 
 // Collector describes the plugin. It has a
 // Config to store the configuration
@@ -64,17 +75,6 @@ func NewCollector(config Config) (d *Collector) {
 	return d
 }
 
-// Config contains the configuration of the plugin
-// Speakers list of SpeakerNames the handler is added. All if empty
-// Terminate indicates whether this is the last handler to be called
-// Artists a list of artists for which episodes should be collected
-type Config struct {
-	Speakers  []string `toml:"speakers"`
-	Terminate bool     `toml:"terminate"`
-	Artists   []string `toml:"artists"`
-	Database  string   `toml:"database"`
-}
-
 // Name returns the plugin name
 func (d *Collector) Name() string {
 	return name
@@ -102,7 +102,7 @@ func (d *Collector) Execute(pluginName string, update soundtouch.Update, speaker
 		return
 	}
 
-	if len(d.Speakers) > 0 && !isIn(speaker.Name(), d.Speakers) {
+	if len(d.Speakers) > 0 && !sliceContains(speaker.Name(), d.Speakers) {
 		// Speaker not handled. Ignoring.
 		return
 	}
@@ -117,7 +117,7 @@ func (d *Collector) Execute(pluginName string, update soundtouch.Update, speaker
 	artist := update.Artist()
 	album := update.Album()
 
-	if !isIn(artist, d.Config.Artists) || !update.HasContentItem() {
+	if !sliceContains(artist, d.Config.Artists) || !update.HasContentItem() {
 		mLogger.Debugf("Ignoring album: %s\n", album)
 		return
 	}
@@ -126,8 +126,8 @@ func (d *Collector) Execute(pluginName string, update soundtouch.Update, speaker
 	readAlbumDB(d.scribbleDb, album, update)
 }
 
-func isIn(name string, selected []string) bool {
-	for _, s := range selected {
+func sliceContains(name string, list []string) bool {
+	for _, s := range list {
 		if name == s {
 			return true
 		}

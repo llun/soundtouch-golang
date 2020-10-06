@@ -31,6 +31,17 @@ const sampleConfig = `
 
 const description = "Automatically adjust sets volume based on listening history."
 
+// Config contains the configuration of the plugin
+// Speakers list of SpeakerNames the handler is added. All if empty
+// Terminate indicates whether this is the last handler to be called
+// Artists a list of artists for which episodes should be collected
+type Config struct {
+	Speakers  []string `toml:"speakers"`
+	Terminate bool     `toml:"terminate"`
+	Artists   []string `toml:"artists"`
+	Database  string   `toml:"database"`
+}
+
 // VolumeButler describes the plugin. It has a
 // Config to store the configuration
 // Plugin the plugin function
@@ -66,17 +77,6 @@ func NewVolumeButler(config Config) (d *VolumeButler) {
 	return d
 }
 
-// Config contains the configuration of the plugin
-// Speakers list of SpeakerNames the handler is added. All if empty
-// Terminate indicates whether this is the last handler to be called
-// Artists a list of artists for which episodes should be collected
-type Config struct {
-	Speakers  []string `toml:"speakers"`
-	Terminate bool     `toml:"terminate"`
-	Artists   []string `toml:"artists"`
-	Database  string   `toml:"database"`
-}
-
 // Name returns the plugin name
 func (vb *VolumeButler) Name() string {
 	return name
@@ -108,7 +108,7 @@ func (vb *VolumeButler) Execute(pluginName string, update soundtouch.Update, spe
 	})
 	mLogger.Debugln("Executing", pluginName)
 
-	if len(vb.Speakers) == 0 || !isIn(speaker.Name(), vb.Speakers) {
+	if len(vb.Speakers) == 0 || !sliceContains(speaker.Name(), vb.Speakers) {
 		mLogger.Debugln("Speaker not handled. --> Done!")
 		return
 	}
@@ -121,7 +121,7 @@ func (vb *VolumeButler) Execute(pluginName string, update soundtouch.Update, spe
 	artist := update.Artist()
 	album := update.Album()
 
-	if !isIn(artist, vb.Config.Artists) || !update.HasContentItem() {
+	if !sliceContains(artist, vb.Config.Artists) || !update.HasContentItem() {
 		mLogger.Debugf("Ignoring album %s from %s\n", album, artist)
 		return
 	}
@@ -157,8 +157,8 @@ func (vb *VolumeButler) Execute(pluginName string, update soundtouch.Update, spe
 	}
 }
 
-func isIn(name string, selected []string) bool {
-	for _, s := range selected {
+func sliceContains(name string, list []string) bool {
+	for _, s := range list {
 		if name == s {
 			return true
 		}

@@ -9,6 +9,8 @@ import (
 
 var name = "AutoOff"
 
+const description = "Switches speakers off if one is switched on"
+
 const sampleConfig = `
   ## Enabling the AutoOff plugin
   # [autoOff]
@@ -23,21 +25,25 @@ const sampleConfig = `
   # terminate = true
 `
 
-const description = "Switches speakers off if one is switched on"
+// Config contains the configuration of the plugin
+// Groups list of Actions.
+type Config map[string]struct {
+	ThenOff []string `toml:"thenOff"`
+}
 
-// Collector describes the plugin. It has a
+// AutoOff describes the plugin. It has a
 // Config to store the configuration
 // Plugin the plugin function
 // suspended indicates that the plugin is temporarely suspended
-type Collector struct {
+type AutoOff struct {
 	Config
 	Plugin    soundtouch.PluginFunc
 	suspended bool
 }
 
-// NewCollector creates a new Collector plugin with the configuration
-func NewCollector(config Config) (d *Collector) {
-	d = &Collector{}
+// NewObserver creates a new Collector plugin with the configuration
+func NewObserver(config Config) (d *AutoOff) {
+	d = &AutoOff{}
 	d.Config = config
 
 	mLogger := log.WithFields(log.Fields{
@@ -49,34 +55,28 @@ func NewCollector(config Config) (d *Collector) {
 	return d
 }
 
-// Config contains the configuration of the plugin
-// Groups list of Actions.
-type Config map[string]struct {
-	ThenOff []string `toml:"thenOff"`
-}
-
 // Name returns the plugin name
-func (d *Collector) Name() string {
+func (d *AutoOff) Name() string {
 	return name
 }
 
 // Description returns a string explaining the purpose of this plugin
-func (d *Collector) Description() string { return description }
+func (d *AutoOff) Description() string { return description }
 
 // SampleConfig returns text explaining how plugin should be configured
-func (d *Collector) SampleConfig() string { return sampleConfig }
+func (d *AutoOff) SampleConfig() string { return sampleConfig }
 
 // Terminate indicates that no further plugin will be executed on this speaker
-func (d *Collector) Terminate() bool { return false }
+func (d *AutoOff) Terminate() bool { return false }
 
 // Disable temporarely the execution of the plugin
-func (d *Collector) Disable() { d.suspended = true }
+func (d *AutoOff) Disable() { d.suspended = true }
 
 // Enable temporarely the execution of the plugin
-func (d *Collector) Enable() { d.suspended = false }
+func (d *AutoOff) Enable() { d.suspended = false }
 
 // Execute runs the plugin with the given parameter
-func (d *Collector) Execute(pluginName string, update soundtouch.Update, speaker soundtouch.Speaker) {
+func (d *AutoOff) Execute(pluginName string, update soundtouch.Update, speaker soundtouch.Speaker) {
 	if reflect.TypeOf(update.Value).Name() != "NowPlaying" {
 		return
 	}
@@ -105,8 +105,8 @@ func (d *Collector) Execute(pluginName string, update soundtouch.Update, speaker
 
 }
 
-func isIn(name string, selected []string) bool {
-	for _, s := range selected {
+func sliceContains(name string, list []string) bool {
+	for _, s := range list {
 		if name == s {
 			return true
 		}

@@ -81,7 +81,7 @@ func Test_contains(t *testing.T) {
 	}
 }
 
-func Test_isIn(t *testing.T) {
+func Test_sliceContains(t *testing.T) {
 	type args struct {
 		list     []string
 		deviceID string
@@ -126,8 +126,8 @@ func Test_isIn(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := isIn(tt.args.list, tt.args.deviceID); got != tt.want {
-				t.Errorf("isIn() = %v, want %v", got, tt.want)
+			if got := sliceContains(tt.args.deviceID, tt.args.list); got != tt.want {
+				t.Errorf("sliceContains() = %v, want %v", got, tt.want)
 			}
 		})
 	}

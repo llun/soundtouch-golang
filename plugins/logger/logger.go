@@ -27,6 +27,16 @@ const sampleConfig = `
 
 const description = "Logs all update messages"
 
+// Config contains the configuration of the plugin
+// Speakers list of SpeakerNames the handler is added. All if empty
+// Terminate indicates whether this is the last handler to be called
+// IgnoreMessages a list of message types to be ignored
+type Config struct {
+	Speakers       []string `toml:"speakers"`
+	Terminate      bool     `toml:"terminate"`
+	IgnoreMessages []string `toml:"ignore_messages"`
+}
+
 // Logger describes the plugin. It has a
 // Config to store the configuration
 // Plugin the plugin function
@@ -51,16 +61,6 @@ func NewLogger(config Config) (d *Logger) {
 	return d
 }
 
-// Config contains the configuration of the plugin
-// Speakers list of SpeakerNames the handler is added. All if empty
-// Terminate indicates whether this is the last handler to be called
-// IgnoreMessages a list of message types to be ignored
-type Config struct {
-	Speakers       []string `toml:"speakers"`
-	Terminate      bool     `toml:"terminate"`
-	IgnoreMessages []string `toml:"ignore_messages"`
-}
-
 // Name returns the plugin name
 func (d *Logger) Name() string {
 	return name
@@ -83,10 +83,10 @@ func (d *Logger) Enable() { d.suspended = false }
 
 // Execute runs the plugin with the given parameter
 func (d *Logger) Execute(pluginName string, update soundtouch.Update, speaker soundtouch.Speaker) {
-	if len(d.IgnoreMessages) > 0 && isIn(reflect.TypeOf(update.Value).Name(), d.IgnoreMessages) {
+	if len(d.IgnoreMessages) > 0 && sliceContains(reflect.TypeOf(update.Value).Name(), d.IgnoreMessages) {
 		return
 	}
-	if len(d.Speakers) > 0 && !isIn(speaker.Name(), d.Speakers) {
+	if len(d.Speakers) > 0 && !sliceContains(speaker.Name(), d.Speakers) {
 		return
 	}
 
@@ -99,8 +99,8 @@ func (d *Logger) Execute(pluginName string, update soundtouch.Update, speaker so
 	mLogger.Infof("%v\n", update)
 }
 
-func isIn(name string, selected []string) bool {
-	for _, s := range selected {
+func sliceContains(name string, list []string) bool {
+	for _, s := range list {
 		if name == s {
 			return true
 		}

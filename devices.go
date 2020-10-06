@@ -159,7 +159,7 @@ func getDevices(conf NetworkConfig, closeChannel bool) (speakers chan *Speaker) 
 	return
 }
 
-func isIn(list []string, deviceID string) bool {
+func sliceContains(deviceID string, list []string) bool {
 	for _, ms := range list {
 		if ms == deviceID {
 			return true

@@ -98,7 +98,7 @@ func main() {
 	}
 
 	if config.AutoOff != nil {
-		pl = append(pl, autooff.NewCollector(*config.AutoOff))
+		pl = append(pl, autooff.NewObserver(*config.AutoOff))
 	}
 
 	if config.Telegram != nil {

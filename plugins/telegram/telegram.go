@@ -32,16 +32,6 @@ const sampleConfig = `
 
 const description = "Logs all update messages to telegram"
 
-// TelegramLogger describes the plugin. It has a
-// Config to store the configuration
-// Plugin the plugin function
-type TelegramLogger struct {
-	Config
-	Plugin    soundtouch.PluginFunc
-	suspended bool
-	bot       *tb.Bot
-}
-
 // Config contains the configuration of the plugin
 // Speakers list of SpeakerNames the handler is added. All if empty
 // Terminate indicates whether this is the last handler to be called
@@ -55,9 +45,19 @@ type Config struct {
 	AuthKey          string   `toml:"authKey"`
 }
 
+// Bot describes the plugin. It has a
+// Config to store the configuration
+// Plugin the plugin function
+type Bot struct {
+	Config
+	Plugin    soundtouch.PluginFunc
+	suspended bool
+	bot       *tb.Bot
+}
+
 // NewTelegramLogger creates a new Logger plugin with the configuration
-func NewTelegramLogger(config Config) (d *TelegramLogger) {
-	d = &TelegramLogger{}
+func NewTelegramLogger(config Config) (d *Bot) {
+	d = &Bot{}
 	d.Config = config
 
 	b, err := tb.NewBot(tb.Settings{
@@ -155,31 +155,31 @@ func NewTelegramLogger(config Config) (d *TelegramLogger) {
 }
 
 // Name returns the plugin name
-func (d *TelegramLogger) Name() string {
+func (d *Bot) Name() string {
 	return name
 }
 
 // Description returns a string explaining the purpose of this plugin
-func (d *TelegramLogger) Description() string { return description }
+func (d *Bot) Description() string { return description }
 
 // SampleConfig returns text explaining how plugin should be configured
-func (d *TelegramLogger) SampleConfig() string { return sampleConfig }
+func (d *Bot) SampleConfig() string { return sampleConfig }
 
 // Terminate indicates that no further plugin will be executed on this speaker
-func (d *TelegramLogger) Terminate() bool { return false }
+func (d *Bot) Terminate() bool { return false }
 
 // Disable temporarely the execution of the plugin
-func (d *TelegramLogger) Disable() { d.suspended = true }
+func (d *Bot) Disable() { d.suspended = true }
 
 // Enable temporarely the execution of the plugin
-func (d *TelegramLogger) Enable() { d.suspended = false }
+func (d *Bot) Enable() { d.suspended = false }
 
 // Execute runs the plugin with the given parameter
-func (d *TelegramLogger) Execute(pluginName string, update soundtouch.Update, speaker soundtouch.Speaker) {
-	if len(d.IgnoreMessages) > 0 && isIn(reflect.TypeOf(update.Value).Name(), d.IgnoreMessages) {
+func (d *Bot) Execute(pluginName string, update soundtouch.Update, speaker soundtouch.Speaker) {
+	if len(d.IgnoreMessages) > 0 && sliceContains(reflect.TypeOf(update.Value).Name(), d.IgnoreMessages) {
 		return
 	}
-	if len(d.Speakers) > 0 && !isIn(speaker.Name(), d.Speakers) {
+	if len(d.Speakers) > 0 && !sliceContains(speaker.Name(), d.Speakers) {
 		return
 	}
 
@@ -191,8 +191,8 @@ func (d *TelegramLogger) Execute(pluginName string, update soundtouch.Update, sp
 	mLogger.Debugf("Executing %v on %v", pluginName, reflect.TypeOf(update.Value).Name())
 }
 
-func isIn(name string, selected []string) bool {
-	for _, s := range selected {
+func sliceContains(name string, list []string) bool {
+	for _, s := range list {
 		if name == s {
 			return true
 		}

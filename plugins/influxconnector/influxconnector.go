@@ -11,6 +11,8 @@ import (
 
 var name = "InfluxConnector"
 
+const description = "Writes event data to InfluxDB "
+
 const sampleConfig = `
   # [influxDB]
   ## speakers for which messages should be logged. If empty, all 
@@ -35,7 +37,18 @@ const sampleConfig = `
   # terminate = true
 `
 
-const description = "Writes event data to InfluxDB "
+// Config contains the configuration of the plugin
+// Speakers list of SpeakerNames the handler is added. All if empty
+// Terminate indicates whether this is the last handler to be called
+// IgnoreMessages a list of message types to be ignored
+type Config struct {
+	InfluxURL   string   `toml:"influxURL"`
+	Database    string   `toml:"database"`
+	Speakers    []string `toml:"speakers"`
+	Terminate   bool     `toml:"terminate"`
+	LogMessages []string `toml:"log_messages"`
+	DryRun      bool     `toml:"dry_run"`
+}
 
 // InfluxDB describes the plugin. It has a
 // Config to store the configuration
@@ -76,19 +89,6 @@ func NewLogger(config Config) (d *InfluxDB) {
 	return d
 }
 
-// Config contains the configuration of the plugin
-// Speakers list of SpeakerNames the handler is added. All if empty
-// Terminate indicates whether this is the last handler to be called
-// IgnoreMessages a list of message types to be ignored
-type Config struct {
-	InfluxURL   string   `toml:"influxURL"`
-	Database    string   `toml:"database"`
-	Speakers    []string `toml:"speakers"`
-	Terminate   bool     `toml:"terminate"`
-	LogMessages []string `toml:"log_messages"`
-	DryRun      bool     `toml:"dry_run"`
-}
-
 // Name returns the plugin name
 func (d *InfluxDB) Name() string {
 	return name
@@ -118,10 +118,10 @@ func (d *InfluxDB) Execute(pluginName string, update soundtouch.Update, speaker 
 	})
 	mLogger.Debugln("Executing", pluginName)
 
-	if len(d.LogMessages) > 0 && !isIn(reflect.TypeOf(update.Value).Name(), d.LogMessages) {
+	if len(d.LogMessages) > 0 && !sliceContains(reflect.TypeOf(update.Value).Name(), d.LogMessages) {
 		return
 	}
-	if len(d.Speakers) > 0 && !isIn(speaker.Name(), d.Speakers) {
+	if len(d.Speakers) > 0 && !sliceContains(speaker.Name(), d.Speakers) {
 		return
 	}
 
@@ -139,8 +139,8 @@ func (d *InfluxDB) Execute(pluginName string, update soundtouch.Update, speaker 
 	}
 }
 
-func isIn(name string, selected []string) bool {
-	for _, s := range selected {
+func sliceContains(name string, list []string) bool {
+	for _, s := range list {
 		if name == s {
 			return true
 		}
