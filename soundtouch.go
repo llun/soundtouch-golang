@@ -37,7 +37,7 @@ func Lookup(iface *net.Interface) <-chan *Speaker {
 	go func() {
 		defer close(speakerCh)
 		for entry := range entriesCh {
-			fSpeaker := NewSpeaker(entry)
+			fSpeaker := NewMdnsSpeaker(entry)
 			info, _ := fSpeaker.Info()
 
 			// filter non-soundtouch speakers
@@ -56,8 +56,8 @@ func Lookup(iface *net.Interface) <-chan *Speaker {
 	return speakerCh
 }
 
-// NewSpeaker returns a new Speaker entity based on a mdns service entry
-func NewSpeaker(entry *mdns.ServiceEntry) *Speaker {
+// NewMdnsSpeaker returns a new Speaker entity based on a mdns service entry
+func NewMdnsSpeaker(entry *mdns.ServiceEntry) *Speaker {
 	if entry == nil {
 		return &Speaker{}
 	}
@@ -72,6 +72,30 @@ func NewSpeaker(entry *mdns.ServiceEntry) *Speaker {
 		url.URL{
 			Scheme: "ws",
 			Host:   fmt.Sprintf("%v:%v", entry.AddrV4.String(), websocketPort),
+		},
+		Info{},
+		nil,
+		nil,
+		nil,
+	}
+}
+
+func NewIPSpeaker(ipAdress string) *Speaker {
+	if ipAdress == "" {
+		return &Speaker{}
+	}
+
+	AddrV4 := net.ParseIP(ipAdress)
+	return &Speaker{
+		AddrV4,
+		8090,
+		url.URL{
+			Scheme: "http",
+			Host:   fmt.Sprintf("%v:%v", AddrV4.String(), 8090),
+		},
+		url.URL{
+			Scheme: "ws",
+			Host:   fmt.Sprintf("%v:%v", AddrV4.String(), websocketPort),
 		},
 		Info{},
 		nil,
