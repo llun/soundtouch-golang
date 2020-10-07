@@ -9,11 +9,18 @@ import (
 
 //Info defines the Info command for the soundtouch system
 type Info struct {
-	DeviceID  string   `xml:"deviceID,attr"`
-	Name      string   `xml:"name"`
-	Type      string   `xml:"type"`
-	IPAddress []string `xml:"networkInfo>ipAddress"`
+	DeviceID  string      `xml:"deviceID,attr"`
+	Name      string      `xml:"name"`
+	Type      string      `xml:"type"`
+	IPAddress []string    `xml:"networkInfo>ipAddress"`
+	Component []Component `xml:"components>component"`
 	Raw       []byte
+}
+
+type Component struct {
+	ComponentCategory string `xml:"componentCategory"`
+	SoftwareVersion   string `xml:"softwareVersion"`
+	SerialNumber      string `xml:"serialNumber"`
 }
 
 type IPAddress string
