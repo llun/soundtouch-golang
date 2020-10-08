@@ -49,6 +49,7 @@ func main() {
 	log.Println("Is poweredOn:", speaker.IsPoweredOn())
 
 	// --- Pressing the POWER button
+	// For other buttons see press_key.go
 	speaker.PressKey(soundtouch.POWER)
 
 	// --- Create a listener to receive updates
