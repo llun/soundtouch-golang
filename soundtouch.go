@@ -80,12 +80,13 @@ func NewMdnsSpeaker(entry *mdns.ServiceEntry) *Speaker {
 	}
 }
 
-func NewIPSpeaker(ipAdress string) *Speaker {
-	if ipAdress == "" {
+// NewIPSpeaker creates a new speaker for the given ipAdress
+func NewIPSpeaker(ipAddress string) *Speaker {
+	if ipAddress == "" {
 		return &Speaker{}
 	}
 
-	AddrV4 := net.ParseIP(ipAdress)
+	AddrV4 := net.ParseIP(ipAddress)
 	return &Speaker{
 		AddrV4,
 		8090,

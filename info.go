@@ -17,13 +17,12 @@ type Info struct {
 	Raw       []byte
 }
 
+// Component contains some component information
 type Component struct {
 	ComponentCategory string `xml:"componentCategory"`
 	SoftwareVersion   string `xml:"softwareVersion"`
 	SerialNumber      string `xml:"serialNumber"`
 }
-
-type IPAddress string
 
 // Info retrieves speaker information
 func (s *Speaker) Info() (Info, error) {

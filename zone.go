@@ -20,12 +20,14 @@ type Member struct {
 	MacAddress string `xml:",chardata"`
 }
 
+// ZoneSlave defines a zone slave
 type ZoneSlave struct {
 	XMLName xml.Name `xml:"zone"`
 	Members []Member `xml:"member"`
 	Master  string   `xml:"master,attr"`
 }
 
+// MultiRoomZone defines a zone with members
 type MultiRoomZone struct {
 	XMLName         xml.Name `xml:"zone"`
 	Members         []Member `xml:"member"`
@@ -63,7 +65,7 @@ func (s *Speaker) SetZone(zi MultiRoomZone) error {
 	return nil
 }
 
-// GetZone sends the now_playing command to the soundtouch system
+// GetZone sends the getZone command to the soundtouch system and returns the zone
 func (s *Speaker) GetZone() (Zone, error) {
 	body, err := s.GetData("getZone")
 	if err != nil {
@@ -80,11 +82,13 @@ func (s *Speaker) GetZone() (Zone, error) {
 	return zone, nil
 }
 
+// HasZone returns true if the speaker has a zone
 func (s *Speaker) HasZone() bool {
 	z, _ := s.GetZone()
 	return len(z.Members) > 0
 }
 
+// IsMaster returns true if the speaker is the master of a zone
 func (s *Speaker) IsMaster() bool {
 	z, _ := s.GetZone()
 
@@ -94,6 +98,7 @@ func (s *Speaker) IsMaster() bool {
 	return false
 }
 
+// GetZoneMembers returns the Members of the zone the speaker is a member
 func (s *Speaker) GetZoneMembers() []Member {
 	z, _ := s.GetZone()
 	return z.Members
