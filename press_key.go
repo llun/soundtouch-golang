@@ -8,34 +8,40 @@ import (
 type Key string
 
 // All soundtouch key constants
+// according: http://developer.bose.com/guides/bose-soundtouch-api/bose-soundtouch-api-reference
 const (
-	PLAY      = "PLAY"
-	PAUSE     = "PAUSE"
-	PLAYPAUSE = "PLAY_PAUSE"
-	// STOP       = "STOP" // Deprecated
-	PREVTRACK  = "PREV_TRACK"
-	NEXTTRACK  = "NEXT_TRACK"
-	THUMBSUP   = "THUMBS_UP"
-	THUMBSDOWN = "THUMBS_DOWN"
-	BOOKMARK   = "BOOKMARK"
-	POWER      = "POWER"
-	MUTE       = "MUTE"
-	// VOLUMEUP       = "VOLUME_UP" // Deprecated
-	// VOLUMEDOWN     = "VOLUME_DOWN" // Deprecated
+	// PRESS KEY Values
+	PLAY           = "PLAY"
+	PAUSE          = "PAUSE"
+	PLAYPAUSE      = "PLAY_PAUSE"
+	PREVTRACK      = "PREV_TRACK"
+	NEXTTRACK      = "NEXT_TRACK"
+	MUTE           = "MUTE"
+	SHUFFLEON      = "SHUFFLE_ON"
+	SHUFFLEOFF     = "SHUFFLE_OFF"
+	REPEATONE      = "REPEAT_ONE"
+	REPEATALL      = "REPEAT_ALL"
+	REPEATOFF      = "REPEAT_OFF"
+	ADDFAVORITE    = "ADD_FAVORITE"
+	REMOVEFAVORITE = "REMOVE_FAVORITE"
+	THUMBSUP       = "THUMBS_UP"
+	THUMBSDOWN     = "THUMBS_DOWN"
+	BOOKMARK       = "BOOKMARK"
+	// PRESS or RELEASE Values
 	PRESET1 = "PRESET_1"
 	PRESET2 = "PRESET_2"
 	PRESET3 = "PRESET_3"
 	PRESET4 = "PRESET_4"
 	PRESET5 = "PRESET_5"
 	PRESET6 = "PRESET_6"
+	// PRESS and RELEASE Values
+	POWER = "POWER"
+
+	// DEPRECATED.
 	// AUXINPUT       = "AUX_INPUT" // Deprecated
-	SHUFFLEOFF     = "SHUFFLE_OFF"
-	SHUFFLEON      = "SHUFFLE_ON"
-	REPEATOFF      = "REPEAT_OFF"
-	REPEATONE      = "REPEAT_ONE"
-	REPEATALL      = "REPEAT_ALL"
-	ADDFAVORITE    = "ADD_FAVORITE"
-	REMOVEFAVORITE = "REMOVE_FAVORITE"
+	// STOP       = "STOP" // Deprecated
+	// VOLUMEUP       = "VOLUME_UP" // Deprecated
+	// VOLUMEDOWN     = "VOLUME_DOWN" // Deprecated
 )
 
 // ALLKEYS contains all KEY constant that can be sent to soundtouch
