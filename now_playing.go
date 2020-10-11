@@ -74,6 +74,7 @@ var ALLSOURCES = []string{
 const (
 	RadioStreaming = "RADIO_STREAMING"
 	TrackOnDemand  = "TRACK_ONDEMAND"
+	RadioTracks    = "RADIO_TRACKS" // like Alexa
 )
 
 // ALLSTREAMS contains all soundtouch streamtypes
