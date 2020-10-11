@@ -98,7 +98,6 @@ type Initializer interface {
 type PluginConfig struct {
 	Name      string
 	Speakers  []string
-	Terminate bool
 	Suspended bool
 	Pfunction PluginFunc
 }
