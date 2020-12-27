@@ -92,7 +92,7 @@ func (d *Collector) Execute(pluginName string, update soundtouch.Update, speaker
 			// If speaker is playing and is playing from TV
 			if speaker.IsAlive() && update.ContentItem().Source == "PRODUCT" {
 				for _, offSpeaker := range thenOff.ThenOff {
-					s := soundtouch.GetDevice(offSpeaker)
+					s := soundtouch.GetSpeakerByName(offSpeaker)
 					if s != nil {
 						s.PowerOff()
 					} else {

@@ -31,10 +31,20 @@ func GetKnownDevices() Speakers {
 	return visibleSpeakers
 }
 
-// GetDevice retuns a speaker for a given name
-func GetDevice(speakerName string) *Speaker {
+// GetSpeakerByName retuns a speaker for a given name
+func GetSpeakerByName(speakerName string) *Speaker {
 	for _, theSpeaker := range visibleSpeakers {
 		if theSpeaker.Name() == speakerName {
+			return theSpeaker
+		}
+	}
+	return nil
+}
+
+// GetSpeakerByDeviceId retuns a speaker for a given DeviceId
+func GetSpeakerByDeviceId(deviceId string) *Speaker {
+	for _, theSpeaker := range visibleSpeakers {
+		if theSpeaker.DeviceID() == deviceId {
 			return theSpeaker
 		}
 	}
