@@ -33,9 +33,11 @@ func (s *Speaker) HasPlugin(name string) bool {
 func (s *Speaker) Execute(msgChan chan *Update) {
 	for update := range msgChan {
 		for _, uh := range s.Plugins {
-			uh.Execute(uh.Name(), *update, *s)
-			if uh.Terminate() {
-				return
+			if uh.IsEnabled() {
+				uh.Execute(uh.Name(), *update, *s)
+				if uh.Terminate() {
+					return
+				}
 			}
 		}
 	}
@@ -79,6 +81,9 @@ type Plugin interface {
 
 	// Terminate indicates that no further plugin will be executed on this speaker
 	Terminate() bool
+
+	// IsEnabled returns true if the plugin is not suspened
+	IsEnabled() bool
 }
 
 // Initializer is an interface that all plugin can optionally implement to initialize the
