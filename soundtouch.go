@@ -29,8 +29,8 @@ type Speaker struct {
 	Plugins      []Plugin
 }
 
-// Lookup listens via mdns for soundtouch speakers and returns Speaker channel
-func Lookup(iface *net.Interface) <-chan *Speaker {
+// LookupSpeakers listens via mdns for soundtouch speakers and returns Speaker channel
+func LookupSpeakers(iface *net.Interface) <-chan *Speaker {
 	speakerCh := make(chan *Speaker)
 	entriesCh := make(chan *mdns.ServiceEntry, 7)
 	defer close(entriesCh)

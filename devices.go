@@ -65,11 +65,10 @@ func SearchDevices(conf NetworkConfig) (speakers chan *Speaker) {
 	return getDevices(conf, false)
 }
 
-// getDevices starts listening on the indicated interface for the speakers to listen for.
-// passes to speakers the series of speakers that are handled for further processing
-func getDevices(conf NetworkConfig, closeChannel bool) (speakers chan *Speaker) {
-	log.Tracef("Opening interface %v", conf.InterfaceName)
-	iff, err := net.InterfaceByName(conf.InterfaceName)
+// OpenInterface
+func OpenInterface(interfaceName string) *net.Interface {
+	log.Tracef("Opening interface %v", interfaceName)
+	iff, err := net.InterfaceByName(interfaceName)
 
 	if err != nil {
 		log.Printf("Error with interface. %s", err)
@@ -77,7 +76,7 @@ func getDevices(conf NetworkConfig, closeChannel bool) (speakers chan *Speaker) 
 			ifaces, err := net.Interfaces()
 			if err != nil {
 				log.Print(fmt.Errorf("local-addresses: %v", err.Error()))
-				return
+				return nil
 			}
 			log.Println("Available interfaces:")
 			for _, i := range ifaces {
@@ -94,6 +93,15 @@ func getDevices(conf NetworkConfig, closeChannel bool) (speakers chan *Speaker) 
 		}
 	}
 
+	return iff
+}
+
+// getDevices starts listening on the indicated interface for the speakers to listen for.
+// passes to speakers the series of speakers that are handled for further processing
+func getDevices(conf NetworkConfig, closeChannel bool) (speakers chan *Speaker) {
+
+	iff := OpenInterface(conf.InterfaceName)
+
 	for _, value := range conf.SpeakerToListenFor {
 		filteredSpeakers[value] = true
 		log.Debugf("Reacting only speakers %v\n", value)
@@ -104,7 +112,7 @@ func getDevices(conf NetworkConfig, closeChannel bool) (speakers chan *Speaker) 
 	log.Debugf("Scanning for Soundtouch systems.")
 	go func() {
 		for ok := true; ok; ok = (len(visibleSpeakers) < conf.NoOfSystems) {
-			speakerCh := Lookup(iff)
+			speakerCh := LookupSpeakers(iff)
 			messageCh := make(chan *Update)
 
 			for speaker := range speakerCh {
