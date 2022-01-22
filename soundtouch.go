@@ -38,10 +38,9 @@ func LookupSpeakers(iface *net.Interface) <-chan *Speaker {
 		defer close(speakerCh)
 		for entry := range entriesCh {
 			fSpeaker := NewMdnsSpeaker(entry)
-			info, _ := fSpeaker.Info()
 
 			// filter non-soundtouch speakers
-			if info.Name != "" {
+			if fSpeaker.DeviceInfo.String() != "" {
 				speakerCh <- fSpeaker
 			}
 		}
@@ -62,7 +61,7 @@ func NewMdnsSpeaker(entry *mdns.ServiceEntry) *Speaker {
 		return &Speaker{}
 	}
 
-	return &Speaker{
+	fSpeaker := &Speaker{
 		entry.AddrV4,
 		entry.Port,
 		url.URL{
@@ -78,6 +77,15 @@ func NewMdnsSpeaker(entry *mdns.ServiceEntry) *Speaker {
 		nil,
 		nil,
 	}
+
+	// Ask ones for Info() to fill the speaker
+	_, err := fSpeaker.Info()
+
+	if err != nil {
+		log.Warnf("Error %v while retrieving info for speaker %v", err, fSpeaker.DeviceInfo.Name)
+	}
+
+	return fSpeaker
 }
 
 // NewIPSpeaker creates a new speaker for the given ipAdress

@@ -24,7 +24,7 @@ type Component struct {
 	SerialNumber      string `xml:"serialNumber"`
 }
 
-// Info retrieves speaker information
+// Info retrieves speaker information and updates the speakers info field
 func (s *Speaker) Info() (Info, error) {
 	body, err := s.GetData("info")
 	if err != nil {
